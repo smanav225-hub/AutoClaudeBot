@@ -4,7 +4,7 @@ AutoClaude is a self-hosted Discord bot + web dashboard that bundles server mana
 
 This repository contains the GitHub-ready copy of the project under `AutoClaude`.
 
-![App Preview](IMAGES/AutoClaudeBot.png)
+![App Preview](IMAGES/AutoClaudeBot.PNG)
 
 ---
 
