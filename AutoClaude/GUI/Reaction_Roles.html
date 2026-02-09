@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Reaction Role</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #1a1b1e;
+            --card-bg: #2a2c31;
+            --card-hover: #313339;
+            --text-main: #ffffff;
+            --text-sub: #b5bac1;
+            --accent-blue: #5865f2;
+            --toggle-off: #4e5058;
+            --scrollbar-thumb: #111214;
+            --editor-bg: #1e1f22;
+            --preview-bg: #000000;
+            --border: #3f4147;
+        }
+
+        body {
+            font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 30px;
+            display: flex;
+            justify-content: center;
+            overflow-y: overlay;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--scrollbar-thumb);
+            border: 3px solid var(--bg-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #6d6f78;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 0 4px;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .close-btn {
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Feature Cards */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feature-card-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+
+        .feature-card-container.allow-overflow {
+            overflow: visible;
+        }
+
+        .feature-card-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .feature-card-header:hover {
+            background-color: var(--card-hover);
+        }
+
+        .feature-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Expandable Section */
+        .expandable-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: #232529;
+        }
+
+        .expandable-section.active {
+            max-height: 1500px;
+            transition: max-height 0.4s cubic-bezier(1, 0, 1, 0);
+        }
+
+        .expandable-section.allow-overflow {
+            overflow: visible;
+        }
+
+        .config-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .dropdown-box {
+            background-color: var(--editor-bg);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropdown-panel {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            background-color: #111214;
+            border: 1px solid #2b2d31;
+            border-radius: 8px;
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-sub);
+        }
+
+        .dropdown-item:hover {
+            background-color: #404249;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+        }
+
+        .btn-discard {
+            background-color: #4f545c;
+            color: white;
+        }
+
+        .btn-discard:hover {
+            background-color: #5d6269;
+        }
+
+        .btn-save {
+            background-color: #2b2d31;
+            color: #4e5058;
+            cursor: not-allowed;
+        }
+
+        .btn-save.active {
+            background-color: var(--accent-blue);
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-publish {
+            background-color: #4752c4;
+            color: white;
+        }
+
+        .btn-publish:hover {
+            background-color: #3b449b;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-off);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent-blue);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title-group">
+                <i data-lucide="chevron-left" class="close-btn" onclick="window.parent.closeComponent()"></i>
+                <div class="w-2 h-2 rounded-full bg-accent-blue"></div>
+                <h1>New Reaction Role</h1>
+            </div>
+            <div class="action-btns">
+                <button class="btn btn-discard" onclick="discardConfig()">Discard</button>
+                <button class="btn btn-save" id="saveBtn" disabled onclick="saveConfig(false)">Save</button>
+                <button class="btn btn-publish" onclick="saveConfig(true)">Publish</button>
+            </div>
+        </div>
+
+        <div class="feature-list">
+            <!-- Channel Section -->
+            <div class="feature-card-container" id="card_channel">
+                <div class="feature-card-header" onclick="toggleSection('channel_section', 'card_channel')">
+                    <div class="feature-title">Channel</div>
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="chevron-down" class="text-sub"></i>
+                    </div>
+                </div>
+                <div id="channel_section" class="expandable-section">
+                    <div class="config-content">
+                        <div>
+                            <label class="config-label text-[11px] font-bold text-gray-500">Channel <span
+                                    class="text-red-500">*</span></label>
+                            <div class="relative mt-2">
+                                <div class="dropdown-box w-full max-w-md bg-[#1e1f22] border-[#3f4147]"
+                                    onclick="toggleDropdown('channel_dropdown')">
+                                    <span id="current_channel" class="flex items-center gap-2 text-white">
+                                        <i data-lucide="hash" class="w-4 h-4"></i> general
+                                    </span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                                </div>
+                                <div id="channel_dropdown" class="dropdown-panel hidden">
+                                    <div class="p-3 text-sm text-gray-500">Loading channels...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Section -->
+            <div class="feature-card-container" id="card_message">
+                <div class="feature-card-header" onclick="toggleSection('message_section', 'card_message')">
+                    <div class="feature-title">Message</div>
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="chevron-down" class="text-sub"></i>
+                    </div>
+                </div>
+                <div id="message_section" class="expandable-section"></div>
+            </div>
+
+            <!-- Reactions Section -->
+            <div class="feature-card-container" id="card_reactions">
+                <div class="feature-card-header" onclick="toggleSection('reactions_section', 'card_reactions')">
+                    <div class="feature-title">Reactions and roles</div>
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="chevron-down" class="text-sub"></i>
+                    </div>
+                </div>
+                <div id="reactions_section" class="expandable-section"></div>
+            </div>
+
+            <!-- Mode Section -->
+            <div class="feature-card-container" id="card_mode">
+                <div class="feature-card-header" onclick="toggleSection('mode_section', 'card_mode')">
+                    <div class="feature-title">Reaction Mode</div>
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="chevron-down" class="text-sub"></i>
+                    </div>
+                </div>
+                <div id="mode_section" class="expandable-section">
+                    <div class="config-content flex flex-col gap-6">
+                        <!-- Default Mode -->
+                        <div class="flex items-start gap-4 cursor-pointer group" onclick="selectMode('default')">
+                            <div class="mt-1">
+                                <div id="radio_default"
+                                    class="w-5 h-5 rounded-full border-2 border-accent-blue flex items-center justify-center bg-accent-blue">
+                                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-[15px] font-bold text-white mb-1">Default</div>
+                                <div class="text-sm text-gray-400 leading-relaxed">
+                                    Reaction roles messages are special messages that let your members automatically
+                                    pick up roles when they react to a particular message. It is especially useful when
+                                    making a verification system for your Discord server.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reverse Mode -->
+                        <div class="flex items-start gap-4 cursor-pointer group" onclick="selectMode('reverse')">
+                            <div class="mt-1">
+                                <div id="radio_reverse"
+                                    class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center bg-transparent">
+                                    <div class="w-2 h-2 rounded-full bg-white hidden"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-[15px] font-bold text-white mb-1">Reverse</div>
+                                <div class="text-sm text-gray-400 leading-relaxed">
+                                    Remove roles when your members first click on a reaction, and give them back when
+                                    they click again.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let state = { channel: null, channel_name: 'general', mode: 'default' };
+        let channelsLoaded = false;
+        window.rolesCache = [];
+        window.rolesLoaded = false;
+        let rolesLoading = false;
+
+        async function loadRoles() {
+            if (window.rolesLoaded || rolesLoading) return;
+            rolesLoading = true;
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) {
+                rolesLoading = false;
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/guilds/${guildId}/roles`);
+                const data = await resp.json();
+                if (data.success && data.roles) {
+                    window.rolesCache = data.roles.filter(r => !r.managed && r.name !== "@everyone");
+                    window.rolesLoaded = true;
+                }
+            } catch (err) { console.error(err); }
+            finally { rolesLoading = false; }
+        }
+
+        async function toggleSection(sectionId, containerId) {
+            const section = document.getElementById(sectionId);
+            const container = document.getElementById(containerId);
+            const header = container.querySelector('.feature-card-header');
+
+            // Lazy load content if it's empty and not currently loading
+            if (!section.innerHTML.trim() && !section.dataset.loading) {
+                section.dataset.loading = "true";
+                if (sectionId === 'message_section') {
+                    await loadComponent('Message.js', section, 'REACTION_MESSAGE_HTML', 'initializeReactionMessage');
+                } else if (sectionId === 'reactions_section') {
+                    await loadComponent('Reaction_And_Roles.js', section, 'REACTION_ROLES_CONTENT_HTML', 'initializeReactionRolesContent');
+                }
+                delete section.dataset.loading;
+            }
+
+            const isActive = section.classList.toggle('active');
+
+            // Handle Chevron Icon Change
+            const icon = header.querySelector('i[data-lucide], svg[data-lucide]');
+            if (isActive) {
+                if (icon) icon.outerHTML = '<i data-lucide="chevron-up" class="text-sub"></i>';
+                setTimeout(() => {
+                    section.classList.add('allow-overflow');
+                    container.classList.add('allow-overflow');
+                }, 400);
+            } else {
+                if (icon) icon.outerHTML = '<i data-lucide="chevron-down" class="text-sub"></i>';
+                section.classList.remove('allow-overflow');
+                container.classList.remove('allow-overflow');
+            }
+            lucide.createIcons();
+        }
+
+        async function loadComponent(scriptName, container, htmlVar, initFunc) {
+            container.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">Loading component...</div>';
+
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = `/gui/Reaction_Roles/${scriptName}`;
+                script.onload = () => {
+                    if (window[htmlVar]) {
+                        container.innerHTML = window[htmlVar];
+                        if (window[initFunc]) window[initFunc]();
+                    }
+                    resolve();
+                };
+                script.onerror = () => {
+                    container.innerHTML = `<div class="p-8 text-center text-sm text-red-500">Error loading ${scriptName}</div>`;
+                    resolve();
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        function selectMode(mode) {
+            state.mode = mode;
+
+            // Update UI
+            const radioDefault = document.getElementById('radio_default');
+            const radioReverse = document.getElementById('radio_reverse');
+
+            if (mode === 'default') {
+                radioDefault.classList.add('bg-accent-blue', 'border-accent-blue');
+                radioDefault.classList.remove('border-gray-600');
+                radioDefault.querySelector('div').classList.remove('hidden');
+
+                radioReverse.classList.remove('bg-accent-blue', 'border-accent-blue');
+                radioReverse.classList.add('border-gray-600');
+                radioReverse.querySelector('div').classList.add('hidden');
+            } else {
+                radioReverse.classList.add('bg-accent-blue', 'border-accent-blue');
+                radioReverse.classList.remove('border-gray-600');
+                radioReverse.querySelector('div').classList.remove('hidden');
+
+                radioDefault.classList.remove('bg-accent-blue', 'border-accent-blue');
+                radioDefault.classList.add('border-gray-600');
+                radioDefault.querySelector('div').classList.add('hidden');
+            }
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = false;
+            saveBtn.classList.add('active');
+        }
+
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+            if (!el.classList.contains('hidden') && !channelsLoaded) {
+                loadChannels();
+            }
+        }
+
+        async function loadChannels() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/guilds/${guildId}/channels`);
+                const data = await resp.json();
+                if (data.success && data.channels) {
+                    const list = document.getElementById('channel_dropdown');
+                    list.innerHTML = '';
+                    data.channels.forEach(ch => {
+                        const item = document.createElement('div');
+                        item.className = 'dropdown-item';
+                        item.innerText = `# ${ch.name}`;
+                        item.onclick = (e) => {
+                            e.stopPropagation();
+                            selectChannel(ch.name, ch.id);
+                        };
+                        list.appendChild(item);
+                    });
+                    channelsLoaded = true;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function selectChannel(name, id) {
+            state.channel = id;
+            state.channel_name = name;
+            document.getElementById('current_channel').innerHTML = `<i data-lucide="hash" class="w-4 h-4"></i> ${name}`;
+            document.getElementById('current_channel').classList.remove('text-gray-400');
+            document.getElementById('channel_dropdown').classList.add('hidden');
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = false;
+            saveBtn.classList.add('active');
+        }
+
+        // --- Phase 2: Helper Functions for Saving ---
+
+        async function uploadImage(fileInput) {
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) return null;
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/upload/image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+                return data.success ? data.url : null;
+            } catch (e) {
+                console.error("Image upload failed", e);
+                return null;
+            }
+        }
+
+        async function gatherMessageData() {
+            // Default message config
+            const msgData = {
+                content: '',
+                title: '',
+                description: '',
+                color: '#ffffff',
+                fields: [],
+                footer: {},
+                author: {},
+                thumbnail: null,
+                image: null
+            };
+
+            const mainInput = document.getElementById('reaction_msg_main');
+            if (!mainInput) return msgData; // Component not loaded
+
+            // Text Inputs
+            msgData.content = mainInput.value;
+            msgData.title = document.getElementById('embed_title_text')?.value || '';
+            msgData.description = document.getElementById('embed_desc_text')?.value || '';
+
+            // Color
+            const activeDot = document.querySelector('.color-dot.active');
+            if (activeDot) msgData.color = activeDot.getAttribute('data-color');
+
+            // Field
+            const fname = document.getElementById('embed_field_name')?.value;
+            const fval = document.getElementById('embed_field_value')?.value;
+            if (fname && fval) {
+                msgData.fields.push({ name: fname, value: fval });
+            }
+
+            // Helper function to get image URL (either upload new or reuse saved)
+            async function getImageUrl(inputId, previewId) {
+                const input = document.getElementById(inputId);
+                const preview = document.getElementById(previewId);
+
+                // Check if there's a new upload
+                if (input && input.files && input.files[0]) {
+                    return await uploadImage(input);
+                }
+
+                // Check if there's a saved URL to reuse
+                if (preview && preview.getAttribute('data-saved-url')) {
+                    return preview.getAttribute('data-saved-url');
+                }
+
+                return null;
+            }
+
+            // Images & Footer/Author Text
+            // Author (Header)
+            const authorImgUrl = await getImageUrl('header_img_input', 'header_img_preview');
+            const headerText = document.getElementById('embed_header_text')?.value;
+            if (authorImgUrl || headerText) {
+                msgData.author = { name: headerText || '', icon_url: authorImgUrl };
+            }
+
+            // Thumbnail
+            const thumbUrl = await getImageUrl('thumb_img_input', 'thumb_img_preview');
+            if (thumbUrl) msgData.thumbnail = thumbUrl;
+
+            // Main Image
+            const mainImgUrl = await getImageUrl('main_img_input', 'main_img_preview');
+            if (mainImgUrl) msgData.image = mainImgUrl;
+
+            // Footer
+            const footerImgUrl = await getImageUrl('footer_img_input', 'footer_img_preview');
+            const footerText = document.getElementById('embed_footer_text')?.value;
+            if (footerImgUrl || footerText) {
+                msgData.footer = { text: footerText || '', icon_url: footerImgUrl };
+            }
+
+            return msgData;
+        }
+
+        function gatherReactionData() {
+            // Defaults
+            const data = {
+                type: 'emoji',
+                allow_multiple: true,
+                emoji_rows: [],
+                dropdown_rows: [],
+                dropdown_placeholder: ''
+            };
+
+            if (window.rrState) {
+                data.type = window.rrState.mode; // 'emoji' or 'dropdown'
+                data.emoji_rows = window.rrState.emojiRows;
+                data.dropdown_rows = window.rrState.dropdownRows;
+            }
+
+            // Toggle
+            const toggle = document.getElementById('rr_multiple_toggle');
+            if (toggle) data.allow_multiple = toggle.checked;
+
+            // Dropdown placeholder
+            const placeholderInput = document.getElementById('rr_dropdown_placeholder');
+            if (placeholderInput) data.dropdown_placeholder = placeholderInput.value;
+
+            return data;
+        }
+
+        // --- Phase 4: Validation Logic ---
+
+        function showError(message) {
+            const existing = document.getElementById('error_popup');
+            if (existing) existing.remove();
+
+            const popup = document.createElement('div');
+            popup.id = 'error_popup';
+            popup.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-[#ed4245] text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3 z-[2000] animate-bounce-in';
+            popup.innerHTML = `
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                <span class="font-semibold text-sm">${message}</span>
+                <i data-lucide="x" class="w-4 h-4 cursor-pointer ml-2 hover:opacity-80" onclick="this.parentElement.remove()"></i>
+            `;
+            document.body.appendChild(popup);
+            if (window.lucide) window.lucide.createIcons();
+
+            setTimeout(() => {
+                if (popup.parentElement) popup.remove();
+            }, 5000);
+        }
+
+        function validateConfig(data) {
+            // 1. Channel Check
+            if (!data.channel) {
+                showError("Please select a channel first!");
+                return false;
+            }
+
+            // 2. Message Color Check (Phase 4 requirement)
+            const msg = data.message;
+            if (!msg.color || msg.color === '#ffffff') {
+                // Heuristic: If it's the default white, check if user actually clicked it
+                // For this implementation, we'll ensure at least one color dot is active
+                const activeDot = document.querySelector('#color_picker_list .color-dot.active');
+                if (!activeDot) {
+                    showError("One of the colors must be selected!");
+                    return false;
+                }
+            }
+
+            // 3. Message Text Check
+            const hasContent = msg.content || msg.embed.title || msg.embed.description ||
+                (msg.embed.fields.length > 0) || msg.embed.footer.text || msg.embed.author.name;
+
+            if (!hasContent) {
+                // Apply default if completely empty (Phase 4 requirement)
+                data.message.content = "React to this message to get your roles!";
+                const mainInput = document.getElementById('reaction_msg_main');
+                if (mainInput) mainInput.value = data.message.content;
+            }
+
+            // 4. Reaction & Roles Check (Phase 4 requirement)
+            const rr = data.reaction_config;
+
+            if (rr.type === 'emoji') {
+                if (!rr.emoji_rows || rr.emoji_rows.length === 0) {
+                    showError("Please add at least one reaction!");
+                    return false;
+                }
+
+                // Rule: Each frame must have both emoji and role. If not, show specific popup
+                for (const row of rr.emoji_rows) {
+                    if (!row.emoji || !row.roleId || row.roleName === 'Select a role') {
+                        showError("Please select both emoji and role for each reaction!");
+                        return false;
+                    }
+                }
+            } else { // Dropdown
+                if (!rr.dropdown_placeholder) {
+                    showError("Dropdown placeholder text is required!");
+                    return false;
+                }
+
+                if (!rr.dropdown_rows || rr.dropdown_rows.length === 0) {
+                    showError("Please add at least one dropdown option!");
+                    return false;
+                }
+
+                for (const row of rr.dropdown_rows) {
+                    if (!row.roleId || !row.label || row.roleName === 'Select a role') {
+                        showError("Please select a role and enter text for all dropdown options!");
+                        return false;
+                    }
+                }
+            }
+
+            // 5. Reaction Mode Check (Phase 4)
+            if (!data.mode) {
+                showError("One of the reaction modes must be selected!");
+                return false;
+            }
+
+            return true;
+        }
+
+        async function saveConfig(shouldPublish = false) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) {
+                showError("Please select a server first!");
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveBtn');
+            const originalBtnText = shouldPublish ? "Publish" : "Save";
+            saveBtn.disabled = true;
+            if (!shouldPublish) saveBtn.innerText = "Saving...";
+
+            try {
+                // 1. Gather Data
+                const messageData = await gatherMessageData();
+                const reactionData = gatherReactionData();
+
+                const payload = {
+                    channel: state.channel,
+                    channel_name: state.channel_name,
+                    mode: state.mode,
+                    message: messageData,
+                    reaction_config: reactionData
+                };
+
+                // 2. Validate (Only if Publishing)
+                if (shouldPublish) {
+                    if (!validateConfig(payload)) {
+                        saveBtn.disabled = false;
+                        return;
+                    }
+                }
+
+                // 3. Save to Backend
+                const saveResp = await fetch(`${API_BASE}/api/config/reaction-roles/${guildId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (saveResp.ok) {
+                    if (shouldPublish) {
+                        // 4. Trigger Publish if requested
+                        const pubResp = await fetch(`${API_BASE}/api/publish/reaction-roles/${guildId}`, {
+                            method: 'POST'
+                        });
+                        const pubData = await pubResp.json();
+                        if (pubData.success) {
+                            alert("Configuration published successfully to Discord!");
+                        } else {
+                            showError("Save successful, but Publish failed: " + pubData.error);
+                        }
+                    } else {
+                        alert("Draft saved successfully!");
+                        // Keep Save button active so user can save again
+                    }
+                } else {
+                    alert("Failed to save configuration.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("An error occurred.");
+            } finally {
+                if (!shouldPublish) {
+                    saveBtn.innerText = "Save";
+                    saveBtn.disabled = false;
+                    saveBtn.classList.add('active');
+                }
+            }
+        }
+
+        function discardConfig() {
+            // Reset global state
+            state = { channel: null, channel_name: 'general', mode: 'default' };
+
+            // Reset UI components
+            document.getElementById('current_channel').innerHTML = '<i data-lucide="hash" class="w-4 h-4"></i> general';
+            document.getElementById('current_channel').classList.add('text-gray-400');
+            selectMode('default');
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('active');
+
+            // Reset Message Section & Images
+            const msgSection = document.getElementById('message_section');
+            msgSection.innerHTML = '';
+            delete msgSection.dataset.loading;
+            window.savedMsgData = null;
+
+            // Reset Reaction Section
+            const rrSection = document.getElementById('reactions_section');
+            rrSection.innerHTML = '';
+            delete rrSection.dataset.loading;
+            window.savedReactionData = null;
+            if (window.rrState) {
+                window.rrState = {
+                    mode: 'emoji',
+                    emojiRows: [{ id: 'e1', emoji: '🙌', roleId: null, roleName: 'Select a role' }],
+                    dropdownRows: [{ id: 'd1', roleId: null, roleName: 'Select a role', label: '' }]
+                };
+            }
+
+            // Close all sections
+            document.querySelectorAll('.expandable-section').forEach(el => {
+                el.classList.remove('active', 'allow-overflow');
+                el.style.maxHeight = null;
+            });
+            document.querySelectorAll('.feature-card-header i[data-lucide]').forEach(icon => {
+                icon.outerHTML = '<i data-lucide="chevron-down" class="text-sub"></i>';
+            });
+            lucide.createIcons();
+
+            alert("All values, text labels, and images have been cleared.");
+        }
+
+        async function loadConfig() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/config/reaction-roles/${guildId}`);
+                const data = await resp.json();
+
+                if (data.success && data.config) {
+                    const cfg = data.config;
+                    console.log("[LOAD] Loaded config:", cfg);
+
+                    // 1. Restore Channel
+                    if (cfg.channel_id) {
+                        selectChannel(cfg.channel_name || 'Unknown', cfg.channel_id);
+                    }
+
+                    // 2. Restore Mode
+                    if (cfg.mode) {
+                        selectMode(cfg.mode);
+                    }
+
+                    // 3. Prepare Sub-component Data (Global storage)
+                    window.savedMsgData = cfg.message || {};
+                    window.savedReactionData = cfg.reaction_config || {};
+
+                    // 4. Expand All Sections & Load Components
+                    // We expand them sequentially to ensure smooth loading
+                    const sections = [
+                        ['channel_section', 'card_channel'],
+                        ['message_section', 'card_message'],
+                        ['reactions_section', 'card_reactions'],
+                        ['mode_section', 'card_mode']
+                    ];
+
+                    for (const [secId, cardId] of sections) {
+                        const sec = document.getElementById(secId);
+                        if (!sec.classList.contains('active')) {
+                            await toggleSection(secId, cardId);
+                        }
+                    }
+                }
+            } catch (err) { console.error("Failed to load config", err); }
+        }
+
+        // Initialize
+        loadRoles(); // Pre-fetch roles
+        loadConfig(); // Load saved config
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
