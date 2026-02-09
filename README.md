@@ -38,7 +38,9 @@ This repository contains the GitHub-ready copy of the project under `AutoClaude`
 *   **Creative Additions**: 
      - Integration with Github API, Use **/leaderboard** command to access any file iside AutoClaude Github.
      - Automatic HI emojji whenver a person in the server says hi or hello in any form
- 
+     - 
+*   AutoClaudeBot prioritizes UI/UX for server admins. Every feature has a beautiful dashboard. No typing commands to configure—just click, design, and save.
+
 *   This App does not contain any discord feature, which already exists inside Discord. It fulfills the all the requirements of **K MEMBERS GIVEAWAY — Build the Auto Claude Community Bot! **.
 
 *  **Future**:
