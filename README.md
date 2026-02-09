@@ -42,7 +42,7 @@ This repository contains the GitHub-ready copy of the project under `AutoClaude`
 *  **Future**:
     - This App does not contain any other features than the above mentioned features. But this code is designed to be easily updated and vibe coded.
     - You can add or create any feature inside this app in just a few minutes, with the perfect structure and file system. See **File Structure.md**.
-    - This contains the template and the prompts required to vibe code this app, and add new features every few minutes, because of its structure.  
+    - This contains the template and the prompts required to vibe code this app, and add new features every few minutes.
 
 ---
 
