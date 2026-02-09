@@ -34,4 +34,4 @@ You need to have Python 3.11+ installed on your PC.
 
 5. **How to Use the App**
    - Watch this tutorial video:
-     - [Tutorail Video](https://www.youtube.com)
+     - [Tutorial Video](https://www.youtube.com)
