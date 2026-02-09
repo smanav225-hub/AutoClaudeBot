@@ -1,7 +1,4 @@
-# Installation
-
-
-## Requirements & Installation
+# Requirements & Installation
 
 ### System Requirement
 You need to have Python 3.11+ installed on your PC.
