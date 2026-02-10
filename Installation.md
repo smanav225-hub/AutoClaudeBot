@@ -30,5 +30,5 @@ You need to have Python 3.11+ installed on your PC.
    - Refresh/reload the page.
 
 5. **How to Use the App**
-   - Watch this tutorial video:
-     - [Tutorial Video](https://www.youtube.com)
+   - Read This File It contains all the instructions on how to use the app, and explain all its features
+   - 📖 **[How to Use.md](./How%20To%20Use.md)**
