@@ -1,0 +1,659 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoClaudeBot - Auto Claude Testing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1e1f22;
+            color: #dbdee1;
+        }
+
+        .sidebar {
+            background-color: #111214;
+            width: 240px;
+        }
+
+        .main-content {
+            background-color: #2b2d31;
+        }
+
+        .card {
+            background-color: #1e1f22;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .sidebar-item {
+            color: #949ba4;
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background-color: #35373c;
+            color: #ffffff;
+        }
+
+        .active-sidebar-item {
+            background-color: #35373c;
+            color: #ffffff;
+        }
+
+        .btn-active {
+            background-color: #4e5058;
+            color: #ffffff;
+        }
+
+        .btn-enable {
+            background-color: #2b2d31;
+            border: 1px solid #3f4147;
+            color: #ffffff;
+        }
+
+        .btn-blue {
+            background-color: #5865f2;
+        }
+
+        .btn-blue:hover {
+            background-color: #4752c4;
+        }
+
+        /* Remove blue focus border globally */
+        *:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <div class="sidebar flex flex-col h-full border-r border-black/20">
+        <div class="p-4 flex items-center space-x-2">
+            <div class="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center">
+                <div class="w-4 h-4 bg-white rounded-full"></div>
+            </div>
+            <span class="text-xl font-bold text-white tracking-tight">AutoClaudeBot</span>
+        </div>
+
+        <div class="px-3 py-2 relative">
+            <button id="serverDropdownBtn"
+                class="w-full flex items-center justify-between px-3 py-2 bg-[#2b2d31] rounded-md text-white text-sm font-medium hover:bg-[#35373c] transition-colors">
+                <div class="flex items-center space-x-2">
+                    <div class="w-5 h-5 bg-gray-600 rounded flex items-center justify-center text-[10px]">ACT</div>
+                    <span id="selectedServerName">Auto Claude Testing</span>
+                </div>
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Server Dropdown Menu -->
+            <div id="serverListContainer"
+                class="hidden absolute left-3 right-3 mt-1 bg-[#111214] border border-black/20 rounded-md shadow-xl z-50 max-h-60 overflow-y-auto">
+                <div id="serverList" class="py-1">
+                    <div class="px-3 py-2 text-xs text-gray-400">Loading servers...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-2 space-y-0.5 mt-2">
+            <div
+                class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer active-sidebar-item">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="text-sm font-medium">Dashboard</span>
+            </div>
+            <div id="settingsSidebarItem"
+                class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span class="text-sm font-medium">Settings</span>
+            </div>
+
+            <div class="pt-4 pb-2 px-3 text-[11px] font-bold text-gray-500 uppercase flex items-center justify-between">
+                <span>Essentials</span>
+                <i data-lucide="chevron-up" class="w-3 h-3"></i>
+            </div>
+
+            <div class="sidebar-item flex items-center justify-between px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Welcome & Goodbye">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm">👋</span>
+                    <span class="text-sm font-medium">Welcome & Goodbye</span>
+                </div>
+            </div>
+            <div class="sidebar-item flex items-center justify-between px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Commmands">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm">⌨️</span>
+                    <span class="text-sm font-medium">Commands</span>
+                </div>
+            </div>
+            <div class="sidebar-item flex items-center justify-between px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Reaction Roles">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm">🎭</span>
+                    <span class="text-sm font-medium">Reaction Roles</span>
+                </div>
+            </div>
+            <div class="sidebar-item flex items-center justify-between px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Levels">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm">⭐</span>
+                    <span class="text-sm font-medium">Levels</span>
+                </div>
+            </div>
+            <div class="sidebar-item flex items-center justify-between px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="LeaderBoard">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm">🏆</span>
+                    <span class="text-sm font-medium">Leaderboard</span>
+                </div>
+            </div>
+            <div class="sidebar-item flex items-center justify-between px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Scheduled Announcements">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm">📅</span>
+                    <span class="text-sm font-medium leading-tight">Scheduled<br>Announcements</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col main-content">
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-6 border-b border-black/20 bg-[#1e1f22]">
+            <div></div>
+            <div class="flex items-center space-x-4">
+                <div class="text-gray-400 cursor-pointer hover:text-white">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </div>
+                <div class="flex items-center space-x-2 cursor-pointer">
+                    <div class="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar">
+                    </div>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-6xl mx-auto">
+                <h1 class="text-2xl font-bold text-white mb-2">Essentials</h1>
+                <div class="h-1 w-12 bg-blue-500 mb-8 rounded-full"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Card 1 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5"
+                        data-feature-title="Welcome & Goodbye">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500">
+                                <i data-lucide="hand" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Welcome & Goodbye</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Automatically send messages and give roles to your new members and send a message when a
+                            members lea...
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Enable</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5" data-feature-title="Commmands">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-400/10 rounded-lg flex items-center justify-center text-blue-400">
+                                <i data-lucide="message-square" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Commmands</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Use these commands inside the server.
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Enable</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5"
+                        data-feature-title="Reaction Roles">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-sky-400/10 rounded-lg flex items-center justify-center text-sky-400">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Reaction Roles</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Let your members get roles by reacting to a message
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Enable</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5" data-feature-title="Moderator">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-600/10 rounded-lg flex items-center justify-center text-blue-600">
+                                <i data-lucide="shield" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Moderator</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Keep your server safe with auto-moderation & empower your mods with powerful moderation
+                            tools
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20 hover:bg-red-500/15">
+                            <span>UPCOMING</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5" data-feature-title="Levels">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500">
+                                <i data-lucide="trophy" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Levels</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Give your members XP and Levels when they send messages and rank them by activity in a
+                            leaderboard
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Enable</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 6 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5"
+                        data-feature-title="Achievements">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-blue-400/10 rounded-lg flex items-center justify-center text-blue-400">
+                                <i data-lucide="award" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Achievements</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Let your members hunt achievements for rewards
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20 hover:bg-red-500/15">
+                            <span>UPCOMING</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 7 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5"
+                        data-feature-title="Leaderboard">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-yellow-400/10 rounded-lg flex items-center justify-center text-yellow-400">
+                                <i data-lucide="star" class="w-6 h-6"></i>
+                            </div>
+                            <span
+                                class="bg-green-500/10 text-green-500 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
+                                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                <span>New!</span>
+                            </span>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Leaderboard</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Track top members, XP, and ranks in a clean leaderboard view.
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Enable</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 8 -->
+                    <div class="card rounded-xl p-6 flex flex-col border border-white/5"
+                        data-feature-title="Scheduled Announcements">
+                        <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-500">
+                                <i data-lucide="calendar" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-bold mb-2">Scheduled Announcements</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed mb-6 flex-1">
+                            Schedule automated messages, cards, or embeds to be posted at any specific future date and
+                            time.
+                        </p>
+                        <button
+                            class="w-full flex items-center justify-center space-x-2 py-2 rounded-md bg-white/5 text-white text-xs font-bold border border-white/10 hover:bg-white/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Enable</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome & Goodbye Modal -->
+    <div id="welcomeModal"
+        class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-md">
+        <div
+            class="relative w-[90%] max-w-[950px] h-[85vh] bg-[#1a1b1e] rounded-2xl shadow-2xl overflow-hidden border-2 border-black">
+            <!-- Close Button -->
+            <button id="closeModal"
+                class="absolute top-4 right-6 text-gray-400 hover:text-white transition-all z-[110] hover:scale-110">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+
+            <!-- Settings Iframe -->
+            <iframe id="settingsIframe" src="" class="w-full h-full border-none"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        /**
+         * ============================================================
+         * SERVER DROPDOWN SYSTEM - DO NOT MODIFY WITHOUT CAUTION
+         * ============================================================
+         * This system handles the sidebar server selection and ensures
+         * the UI stays synchronized with the backend state.
+         */
+
+        // Initial setup
+        lucide.createIcons();
+
+        // State variables
+        let currentGuildId = null;
+        let dropdownOpen = false;
+        let servers = [];
+        let isInitialized = false;
+
+        // Element references
+        const serverDropdownBtn = document.getElementById('serverDropdownBtn');
+        const serverListContainer = document.getElementById('serverListContainer');
+        const serverList = document.getElementById('serverList');
+        const selectedServerName = document.getElementById('selectedServerName');
+        const welcomeModal = document.getElementById('welcomeModal');
+        const closeModal = document.getElementById('closeModal');
+        const settingsIframe = document.getElementById('settingsIframe');
+        const settingsSidebarItem = document.getElementById('settingsSidebarItem');
+
+        /**
+         * Function: toggleServerDropdown
+         * Manages the visibility of the server selection menu.
+         */
+        function toggleServerDropdown(e) {
+            if (e) e.stopPropagation();
+            dropdownOpen = !dropdownOpen;
+
+            if (dropdownOpen) {
+                serverListContainer.classList.remove('hidden');
+                renderServerList();
+            } else {
+                serverListContainer.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Function: renderServerList
+         * Populates the dropdown menu with server entries fetched from the backend.
+         */
+        function renderServerList() {
+            serverList.innerHTML = ''; // Clear existing
+
+            if (servers.length === 0) {
+                serverList.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No servers found.</div>';
+                return;
+            }
+
+            servers.forEach(server => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center space-x-3 px-3 py-2 hover:bg-[#35373c] cursor-pointer transition-colors';
+
+                const iconHtml = server.icon
+                    ? `<img src="${server.icon}" class="w-6 h-6 rounded-full" />`
+                    : `<div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white">${server.name.charAt(0)}</div>`;
+
+                item.innerHTML = `
+                    ${iconHtml}
+                    <div class="flex-1 min-w-0">
+                        <div class="text-white text-xs font-medium truncate">${server.name}</div>
+                        <div class="text-gray-400 text-[10px]">${server.member_count} members</div>
+                    </div>
+                `;
+
+                // Clicking an item triggers the selection logic
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selectServer(server);
+                };
+
+                serverList.appendChild(item);
+            });
+        }
+
+        /**
+         * Function: selectServer
+         * Performs the "Switch Server" operation. Updates global IDs and informs backend.
+         */
+        async function selectServer(server) {
+            console.log(`[SYSTEM] Selecting server: ${server.name} (${server.id})`);
+
+            // Update UI Labels
+            selectedServerName.innerText = server.name;
+            currentGuildId = server.id;
+
+            // Close the dropdown
+            dropdownOpen = false;
+            serverListContainer.classList.add('hidden');
+
+            // Update backend state so channels/config are ready when needed
+            try {
+                const resp = await fetch(`${API_BASE}/api/guilds/${server.id}/select`);
+                const data = await resp.json();
+
+                // If settings are currently open, we must refresh the iframe to load the new server's data
+                if (!welcomeModal.classList.contains('hidden')) {
+                    const currentSrc = settingsIframe.src;
+                    if (currentSrc.includes('reaction-roles')) {
+                        settingsIframe.src = `${API_BASE}/gui/reaction-roles?guild_id=${server.id}`;
+                    } else if (currentSrc.includes('scheduled-announcement')) {
+                        settingsIframe.src = `${API_BASE}/gui/scheduled-announcement?guild_id=${server.id}`;
+                    } else if (currentSrc.includes('Setting.html')) {
+                        settingsIframe.src = `${API_BASE}/gui/Setting.html?guild_id=${server.id}`;
+                    } else if (currentSrc.includes('Commands.html')) {
+                        settingsIframe.src = `${API_BASE}/gui/Commands.html?guild_id=${server.id}`;
+                    } else if (currentSrc.includes('Level.html')) {
+                        settingsIframe.src = `${API_BASE}/gui/Level.html?guild_id=${server.id}`;
+                    } else if (currentSrc.includes('Leaderboard.html')) {
+                        settingsIframe.src = `${API_BASE}/gui/Leaderboard.html?guild_id=${server.id}`;
+                    } else {
+                        settingsIframe.src = `${API_BASE}/gui/welcome-goodbye?guild_id=${server.id}`;
+                    }
+                }
+            } catch (err) {
+                console.error('[ERROR] Failed to inform backend of server selection:', err);
+            }
+        }
+
+        /**
+         * Function: initializeApp
+         * Startup logic to fetch server list and restore previous state.
+         */
+        async function initializeApp() {
+            try {
+                const response = await fetch(`${API_BASE}/api/servers`);
+                const data = await response.json();
+
+                if (data.success && data.servers && data.servers.length > 0) {
+                    servers = data.servers;
+
+                    // Priority: Last saved server -> First available server
+                    const targetId = data.last_server || servers[0].id;
+                    const serverToSelect = servers.find(s => s.id === targetId) || servers[0];
+
+                    await selectServer(serverToSelect);
+                    isInitialized = true;
+                } else {
+                    console.warn('[WARN] No servers returned from Discord API.');
+                }
+            } catch (error) {
+                console.error('[ERROR] App initialization failed:', error);
+            }
+        }
+
+        // Attach Event Listeners
+        serverDropdownBtn.addEventListener('click', toggleServerDropdown);
+
+        // Handle clicks outside the dropdown to close it
+        document.addEventListener('click', (e) => {
+            if (dropdownOpen && !serverDropdownBtn.contains(e.target) && !serverListContainer.contains(e.target)) {
+                toggleServerDropdown();
+            }
+        });
+
+        // Run startup
+        initializeApp();
+
+        /**
+         * ============================================================
+         * END OF SERVER DROPDOWN SYSTEM
+         * ============================================================
+         */
+
+        /**
+         * Function: closeComponent
+         * Allows child iframes to request the modal to close.
+         */
+        window.closeComponent = function () {
+            welcomeModal.classList.add('hidden');
+            settingsIframe.src = "";
+        };
+
+        // Card button handling
+        const cards = document.querySelectorAll('.card');
+        let isOpening = false;
+
+        function openFeatureByTitle(title, e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            if (isOpening) return;
+            isOpening = true;
+
+            if (!currentGuildId) {
+                alert("Please select a server first!");
+                isOpening = false;
+                return;
+            }
+
+            settingsIframe.src = "about:blank";
+
+            let targetUrl = "";
+            if (title === 'Welcome & Goodbye') {
+                targetUrl = `${API_BASE}/gui/welcome-goodbye?guild_id=${currentGuildId}`;
+            } else if (title === 'Commands' || title === 'Commmands') {
+                targetUrl = `${API_BASE}/gui/Commands.html?guild_id=${currentGuildId}`;
+            } else if (title === 'Levels') {
+                targetUrl = `${API_BASE}/gui/Level.html?guild_id=${currentGuildId}`;
+            } else if (title === 'LeaderBoard' || title === 'Leaderboard') {
+                targetUrl = `${API_BASE}/gui/Leaderboard.html?guild_id=${currentGuildId}`;
+            } else if (title === 'Reaction Roles') {
+                targetUrl = `${API_BASE}/gui/reaction-roles?guild_id=${currentGuildId}`;
+            } else if (title === 'Scheduled Announcements') {
+                targetUrl = `${API_BASE}/gui/scheduled-announcement?guild_id=${currentGuildId}`;
+            }
+
+            if (targetUrl) {
+                settingsIframe.src = targetUrl;
+                welcomeModal.classList.remove('hidden');
+            } else {
+                console.log("Feature not implemented yet:", title);
+            }
+
+            setTimeout(() => { isOpening = false; }, 500);
+        }
+
+        cards.forEach((card) => {
+            const h3 = card.querySelector('h3');
+            const btn = card.querySelector('button');
+
+            const openFeature = (e) => {
+                const title = card.getAttribute('data-feature-title') || (h3 ? h3.innerText.trim() : '');
+                openFeatureByTitle(title, e);
+            };
+
+            // Only attach to the card OR the button to prevent bubbling issues, 
+            // but we'll attach to both and rely on stopPropagation + isOpening flag.
+            if (btn) btn.onclick = openFeature;
+
+            const featureTitle = card.getAttribute('data-feature-title') || (h3 ? h3.innerText.trim() : '');
+            if (['Welcome & Goodbye', 'Commands', 'Commmands', 'Levels', 'LeaderBoard', 'Leaderboard', 'Reaction Roles', 'Scheduled Announcements'].includes(featureTitle)) {
+                card.style.cursor = 'pointer';
+                card.onclick = openFeature;
+            }
+        });
+
+        const sidebarFeatures = document.querySelectorAll('.sidebar-feature');
+        sidebarFeatures.forEach((item) => {
+            item.addEventListener('click', (e) => {
+                const title = item.getAttribute('data-feature-title') || '';
+                openFeatureByTitle(title, e);
+            });
+        });
+
+        if (settingsSidebarItem) {
+            settingsSidebarItem.addEventListener('click', (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                settingsIframe.src = "about:blank";
+                const settingsUrl = currentGuildId
+                    ? `${API_BASE}/gui/Setting.html?guild_id=${currentGuildId}`
+                    : `${API_BASE}/gui/Setting.html`;
+                settingsIframe.src = settingsUrl;
+                welcomeModal.classList.remove('hidden');
+            });
+        }
+
+        closeModal.addEventListener('click', () => {
+            welcomeModal.classList.add('hidden');
+            settingsIframe.src = "";
+        });
+
+        welcomeModal.addEventListener('click', (e) => {
+            if (e.target === welcomeModal) {
+                welcomeModal.classList.add('hidden');
+                settingsIframe.src = "";
+            }
+        });
+    </script>
+</body>
+
+</html>
