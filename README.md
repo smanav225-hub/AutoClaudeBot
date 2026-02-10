@@ -70,7 +70,7 @@ AutoClaude provides a MEE6-style feature set with a locally hosted GUI for confi
 
 ## Setup
 
-- See Installation.md
+- Follow the Instruction of **[Scripts.md](./nstallation.md)**.
 
 ---
 
