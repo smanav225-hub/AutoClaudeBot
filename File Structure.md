@@ -174,64 +174,12 @@ Database.py / Message_Database.py
 
 ---
 
+## How to Add Features Efficiently
+
+This file contains instructions on how you can add features and improve AutoClaudeBot efficiently.
+It contains all the instructions you need to know and use for command creation, feature workflows, debugging, and production-ready prompts.
+
+Read here:
+**[How to Vibe Code.md](./How%20To%20Vibe%20Code.md)**
 
 
-# Prompt/Steps to Create a Command in AutoClaudeBot
-
-Developer guide: add a new slash command with a web-controllable toggle and role-based permissions.
-
-## 1. Database Layer (`AutoClaude/Database.py`)
-
-Add a new key in the default settings dictionary:
-
-```python
-"commands_new_feature": {
-    "enabled": False,
-    "role_ids": []
-}
-```
-
-## 2. Core Logic Layer (`AutoClaude/Core/Commands.py`)
-
-Add the command inside `IntegratedCommandBot.setup_hook`:
-
-```python
-@self.tree.command(name="mycommand", description="Does something cool")
-async def mycommand(interaction: discord.Interaction):
-    cfg = self.db.get_settings().get("commands_new_feature", {})
-    if not self._check_perms(interaction, cfg):
-        return
-
-    await interaction.response.send_message("Success!")
-```
-
-## 3. Backend API Layer (`AutoClaude/Backend.py`)
-
-Add GET and POST endpoints:
-
-```python
-@app.post("/api/settings/commands-new-feature")
-async def save_new_settings(payload: Dict = Body(...)):
-    db_manager.save_settings({"commands_new_feature": payload})
-    if command_bot_instance:
-        asyncio.create_task(command_bot_instance.refresh_permissions())
-    return {"success": True}
-```
-
-## 4. GUI Layer (`AutoClaude/GUI/Commands.html`)
-
-Add a new command card and initialize a `CommandManager`:
-
-```javascript
-const newFeatureManager = new CommandManager('uniquePrefix', '/api/settings/commands-new-feature');
-newFeatureManager.loadSettings();
-```
-
----
-
-## Summary Workflow
-
-1. Add persistent state in `Database.py`.
-2. Implement the slash command in `Core/Commands.py`.
-3. Add API routes in `Backend.py`.
-4. Add the GUI card and JS wiring in `Commands.html`.
