@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+    :root {
+      --bg: #000000;
+      --panel: rgba(255, 255, 255, 0.02);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f3f4ff;
+      --muted: #7e8698;
+      --accent-cyan: #00f2ff;
+      --accent-light: #7ad5ff;
+      --accent-violet: #b470ff;
+      --accent-green: #4dfdb5;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #000000;
+      color: var(--text);
+      font-family: "Outfit", sans-serif;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.25) rgba(3, 3, 3, 0.9);
+    }
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(3, 3, 3, 0.9);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+      border: 2px solid rgba(3, 3, 3, 0.85);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+    .shell {
+      width: min(1360px, calc(100vw - 32px));
+      margin: 32px auto 40px;
+      display: grid;
+      gap: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 28px 36px 24px;
+    }
+    .titleWrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .backBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+    .backBtn:hover {
+      border-color: var(--accent-cyan);
+    }
+    .eyebrow {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    h1 {
+      margin: 2px 0 0;
+      font-size: clamp(1.5rem, 1.8vw + 1rem, 2.2rem);
+    }
+    .guild {
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 18px 14px;
+      flex-wrap: wrap;
+    }
+    .seg {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .seg button,
+    .actionBtn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 14px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .seg button.active {
+      color: var(--accent-cyan);
+      border-color: rgba(0, 242, 255, 0.4);
+      background: rgba(0, 242, 255, 0.1);
+    }
+    .actionBtn {
+      border-radius: 14px;
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+    }
+    .actionBtn:hover {
+      border-color: var(--accent-cyan);
+    }
+    .status {
+      margin: 0 18px 8px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .status.error {
+      border-color: rgba(248, 113, 113, 0.4);
+      color: #f87171;
+    }
+    .stats {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      padding: 0 18px 12px;
+    }
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.02);
+      min-height: 120px;
+    }
+    .stat .k {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .stat .v {
+      margin-top: 8px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .charts {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr 1fr;
+      padding: 0 18px 32px;
+    }
+    .chartCard {
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    .chartCard h3 {
+      margin: 0 0 16px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+    .chartWrap {
+      height: 260px;
+    }
+    .chartCard.full {
+      grid-column: span 2;
+    }
+    @media (max-width: 768px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .charts {
+        grid-template-columns: 1fr;
+      }
+      .chartCard.full {
+        grid-column: span 1;
+      }
+    }
+    @media (max-width: 640px) {
+      .shell {
+        width: calc(100vw - 24px);
+        margin-top: 16px;
+      }
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel header">
+      <div class="titleWrap">
+        <button class="backBtn" onclick="closeComponent()" aria-label="Back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div><p class="eyebrow">Server Health</p><h1>Health Analytics</h1></div>
+      </div>
+      <div class="guild" id="guild">Guild: -</div>
+    </section>
+
+    <section class="panel controls">
+      <div class="seg" id="rangeSeg">
+        <button data-hours="24">24h</button>
+        <button data-hours="168" class="active">7d</button>
+        <button data-hours="720">30d</button>
+      </div>
+      <button class="actionBtn" id="refreshBtn">Refresh</button>
+    </section>
+
+    <div id="status" class="status" hidden></div>
+
+    <section class="stats" id="stats"></section>
+
+    <section class="charts">
+      <article class="panel chartCard"><h3>Messages Over Time</h3><div class="chartWrap"><canvas id="c1"></canvas></div></article>
+      <article class="panel chartCard"><h3>Active Users</h3><div class="chartWrap"><canvas id="c2"></canvas></div></article>
+      <article class="panel chartCard"><h3>XP Awarded</h3><div class="chartWrap"><canvas id="c3"></canvas></div></article>
+      <article class="panel chartCard"><h3>Reputation</h3><div class="chartWrap"><canvas id="c4"></canvas></div></article>
+      <article class="panel chartCard full"><h3>New Members</h3><div class="chartWrap"><canvas id="c5"></canvas></div></article>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const guildId = params.get("guild_id");
+    const guildEl = document.getElementById("guild");
+    const statusEl = document.getElementById("status");
+    const rangeSeg = document.getElementById("rangeSeg");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const statsEl = document.getElementById("stats");
+    guildEl.textContent = "Guild: " + (guildId || "missing guild_id");
+
+    const colors = {
+      msg: "rgb(0,242,255)", usr: "rgb(116,199,255)", xp: "rgb(161,120,255)", newm: "rgb(77,253,181)", rep: "rgb(168,116,255)"
+    };
+
+    let charts = { c1: null, c2: null, c3: null, c4: null, c5: null };
+    let currentHours = 168;
+
+    function closeComponent() {
+      if (window.parent && typeof window.parent.closeComponent === "function") return window.parent.closeComponent();
+      window.history.back();
+    }
+
+    function setStatus(msg, isError = false) {
+      statusEl.hidden = false;
+      statusEl.textContent = msg;
+      statusEl.className = "status" + (isError ? " error" : "");
+    }
+
+    function clearStatus() { statusEl.hidden = true; }
+
+    async function fetchJSON(url) {
+      const res = await fetch(url, { headers: { "Content-Type": "application/json" } });
+      const txt = await res.text();
+      let data = {};
+      if (txt) { try { data = JSON.parse(txt); } catch { data = { raw: txt }; } }
+      if (!res.ok) throw new Error(data.error || data.detail || ("Request failed: " + res.status));
+      return data;
+    }
+
+    function toNum(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+
+    function normalizeBuckets(raw) {
+      const root = raw.data || raw.result || raw || {};
+      const arr = [root.series, root.buckets, root.points, root.timeline, root.items, root.metrics].find(Array.isArray) || [];
+      const now = new Date();
+      
+      return arr.map((b, i) => {
+        let d = null;
+        if (b.timestamp_iso) {
+          d = new Date(b.timestamp_iso);
+        } else if (b.bucket) {
+          const ts = Number(b.bucket);
+          d = new Date(ts < 10000000000 ? ts * 1000 : ts);
+        } else {
+          const offsetHours = currentHours - i - 1;
+          d = new Date(now.getTime() - (offsetHours * 3600000));
+        }
+        
+        let label = "";
+        if (currentHours <= 24) {
+          label = d.toLocaleTimeString([], { hour: 'numeric' });
+        } else {
+          label = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        return {
+          label: label,
+          messageCount: toNum(b.message_count ?? b.messageCount ?? b.messages),
+          activeUsers: toNum(b.active_users ?? b.activeUsers ?? b.users),
+          xpAwarded: toNum(b.xp_awarded ?? b.xpAwarded ?? b.xp),
+          newMembers: toNum(b.new_members ?? b.newMembers ?? b.joins),
+          reputationGiven: toNum(b.reputation_given ?? b.reputationGiven ?? b.rep)
+        };
+      });
+    }
+
+    function formatNum(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+      if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+      return n.toLocaleString();
+    }
+
+    function statCard(label, value, color) {
+      return `<article class="panel stat"><div class="k">${label}</div><div class="v" style="color:${color}">${value}</div></article>`;
+    }
+
+    function chartConfig(type, labels, data, color, fill = false) {
+      return {
+        type,
+        data: { labels, datasets: [{ data, borderColor: color, backgroundColor: fill ? color.replace("rgb", "rgba").replace(")", ",0.2)") : color, borderWidth: 2, fill, tension: 0.35, pointRadius: 0, maxBarThickness: 26 }] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { 
+              ticks: { 
+                color: "rgb(120,115,108)", 
+                font: { size: 10, family: "JetBrains Mono" },
+                autoSkip: true,
+                maxTicksLimit: currentHours <= 24 ? 12 : (currentHours <= 168 ? 7 : 15),
+                maxRotation: 0
+              }, 
+              grid: { display: false } 
+            },
+            y: { beginAtZero: true, ticks: { color: "rgb(120,115,108)", font: { size: 10, family: "JetBrains Mono" } }, grid: { color: "rgba(255,255,255,0.04)" } }
+          }
+        }
+      };
+    }
+
+    function upsertChart(key, config) {
+      const el = document.getElementById(key);
+      if (!el) return;
+      const ctx = el.getContext("2d");
+      if (charts[key]) charts[key].destroy();
+      charts[key] = new Chart(ctx, config);
+    }
+
+    async function loadHealth() {
+      if (!guildId) return setStatus("Missing guild_id in query string.", true);
+      if (refreshBtn.disabled) return;
+      refreshBtn.disabled = true;
+      setStatus("Loading health data...");
+      try {
+        const raw = await fetchJSON(`/api/pro/health/${encodeURIComponent(guildId)}?hours=${encodeURIComponent(currentHours)}`);
+        const buckets = normalizeBuckets(raw);
+        if (!buckets.length) throw new Error("No health data returned.");
+
+        const labels = buckets.map(b => b.label);
+        const sum = (k) => buckets.reduce((a, b) => a + toNum(b[k]), 0);
+        const maxVal = (k) => buckets.reduce((a, b) => Math.max(a, toNum(b[k])), 0);
+
+        statsEl.innerHTML = [
+          statCard("Messages", formatNum(sum("messageCount")), colors.msg),
+          statCard("Peak Users", formatNum(maxVal("activeUsers")), colors.usr),
+          statCard("XP Awarded", formatNum(sum("xpAwarded")), colors.xp),
+          statCard("New Members", formatNum(sum("newMembers")), colors.newm),
+          statCard("Reputation", formatNum(sum("reputationGiven")), colors.rep)
+        ].join("");
+
+        upsertChart("c1", chartConfig("line", labels, buckets.map(b => b.messageCount), colors.msg, true));
+        upsertChart("c2", chartConfig("line", labels, buckets.map(b => b.activeUsers), colors.usr, true));
+        upsertChart("c3", chartConfig("bar", labels, buckets.map(b => b.xpAwarded), colors.xp, false));
+        upsertChart("c4", chartConfig("line", labels, buckets.map(b => b.reputationGiven), colors.rep, true));
+        upsertChart("c5", chartConfig("bar", labels, buckets.map(b => b.newMembers), colors.newm, false));
+        clearStatus();
+      } catch (e) {
+        setStatus(e.message || "Failed to load health data.", true);
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    rangeSeg.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        rangeSeg.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentHours = Number(btn.dataset.hours || 168);
+        loadHealth();
+      });
+    });
+    refreshBtn.addEventListener("click", loadHealth);
+    
+    if (!window.__healthLoaded) {
+        window.__healthLoaded = true;
+        setTimeout(loadHealth, 100);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moderation Pro</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+    :root {
+      --bg: #010209;
+      --panel: rgba(255, 255, 255, 0.02);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f3f4ff;
+      --muted: #7e8698;
+      --accent-cyan: #00f2ff;
+      --accent-light: #7ad5ff;
+      --accent-violet: #b470ff;
+      --accent-green: #4dfdb5;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 18% 20%, rgba(0, 242, 255, 0.1), transparent 35%), #010209;
+      color: var(--text);
+      font-family: "Outfit", sans-serif;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.25) rgba(3, 3, 3, 0.9);
+    }
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(3, 3, 3, 0.9);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      border: 2px solid rgba(3, 3, 3, 0.85);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.38);
+    }
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 32px auto 40px;
+      display: grid;
+      gap: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 24px 32px 20px;
+    }
+    .titleWrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .backBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+    .backBtn:hover {
+      border-color: var(--accent-cyan);
+    }
+    .eyebrow {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    h1 {
+      margin: 2px 0 0;
+      font-size: clamp(1.55rem, 1.8vw + 1rem, 2.2rem);
+    }
+    .guild {
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .tab.active {
+      color: var(--accent-cyan);
+      border-color: rgba(0, 242, 255, 0.4);
+      background: rgba(0, 242, 255, 0.12);
+    }
+    .status {
+      margin: 0 18px 10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .status.error {
+      border-color: rgba(248, 113, 113, 0.4);
+      color: #f87171;
+    }
+    .content {
+      padding: 0 18px 22px;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .card {
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+      color: var(--text);
+    }
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 242, 255, 0.12);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .btn.primary {
+      background: linear-gradient(120deg, rgba(0, 242, 255, 0.15), rgba(122, 213, 255, 0.25));
+      color: var(--text);
+    }
+    .btn:hover {
+      background: rgba(0, 242, 255, 0.25);
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .rule {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+      display: grid;
+      gap: 10px;
+    }
+    .chip {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+    }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 22px 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.01);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+    th {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    @media (max-width: 920px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .shell {
+        width: calc(100vw - 24px);
+        margin-top: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel header">
+      <div class="titleWrap"><button class="backBtn" onclick="closeComponent()" aria-label="Back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><p class="eyebrow">Safety Ops</p><h1>AI Moderation</h1></div></div>
+      <div class="guild" id="guild">Guild: -</div>
+    </section>
+
+    <section class="panel tabs">
+      <button class="tab active" data-tab="rules">Rules</button>
+      <button class="tab" data-tab="events">Recent Events</button>
+    </section>
+
+    <div id="status" class="status" hidden></div>
+
+    <section class="content">
+      <div id="rulesTab" class="grid">
+        <article class="card">
+          <h3 style="margin:0 0 8px">Add Rule</h3>
+          <form id="ruleForm" class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <div><label>Type</label><select id="type"><option value="regex">Regex</option><option value="blocklist">Blocklist</option><option value="link_filter">Link Filter</option></select></div>
+            <div><label>Action</label><select id="action"><option value="delete">Delete</option><option value="warn">Warn</option><option value="mute">Mute</option><option value="ban">Ban</option></select></div>
+            <div style="grid-column:1/-1"><label>Pattern</label><input id="pattern" required placeholder="badword|badword2" /></div>
+            <div style="grid-column:1/-1"><label>Reason</label><input id="reason" placeholder="Optional note" /></div>
+            <div class="row" style="grid-column:1/-1"><button class="btn primary" type="submit" id="addBtn">Add Rule</button><button class="btn" type="button" id="reloadBtn">Refresh</button></div>
+          </form>
+        </article>
+        <article class="card">
+          <h3 style="margin:0 0 8px">AI Triage</h3>
+          <label>Message</label><textarea id="triageText" placeholder="Paste message to triage..."></textarea>
+          <div class="row" style="margin-top:8px"><button class="btn primary" id="triageBtn" type="button">Run Triage</button></div>
+          <div id="triageOut" class="empty" style="margin-top:8px">Run triage to preview moderation action.</div>
+        </article>
+      </div>
+
+      <div id="rulesList" style="display:grid;gap:8px;margin-top:10px"></div>
+
+      <div id="eventsTab" class="card" style="display:none;margin-top:10px">
+        <div style="overflow:auto"><table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Message</th><th>Reason</th></tr></thead><tbody id="eventsBody"></tbody></table></div>
+        <div id="eventsEmpty" class="empty" hidden>No moderation events recorded yet.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const p = new URLSearchParams(window.location.search); const guildId = p.get("guild_id"); document.getElementById("guild").textContent = "Guild: " + (guildId || "missing guild_id");
+    const statusEl = document.getElementById("status"); const rulesTab = document.getElementById("rulesTab"); const eventsTab = document.getElementById("eventsTab"); const rulesList = document.getElementById("rulesList");
+    const eventsBody = document.getElementById("eventsBody"); const eventsEmpty = document.getElementById("eventsEmpty");
+
+    function closeComponent(){ if(window.parent&&typeof window.parent.closeComponent==="function") return window.parent.closeComponent(); window.history.back(); }
+    function setStatus(msg,e=false){ statusEl.hidden=false; statusEl.textContent=msg; statusEl.className="status"+(e?" error":""); }
+    function clearStatus(){ statusEl.hidden=true; }
+    async function fetchJSON(url,opt={}){ const cfg={method:opt.method||"GET",headers:{"Content-Type":"application/json"}}; if(opt.body!==undefined) cfg.body=JSON.stringify(opt.body); const r=await fetch(url,cfg); const t=await r.text(); let d={}; if(t){try{d=JSON.parse(t);}catch{d={raw:t};}} if(!r.ok) throw new Error(d.error||d.detail||("Request failed: "+r.status)); return d; }
+
+    function normalizeRules(raw){ const root=raw.data||raw.result||raw||{}; const arr=[root.rules,root.items,root.entries].find(Array.isArray)||[]; return arr.map((x,i)=>({ id:x.id??x.rule_id??i, type:x.type||"regex", pattern:x.pattern||x.regex||"-", action:x.action||"warn", reason:x.reason||"", enabled:x.enabled!==false })); }
+    function normalizeEvents(raw){ const root=raw.data||raw.result||raw||{}; const arr=[root.events,root.actions,root.items].find(Array.isArray)||[]; return arr.map((x,i)=>({ id:x.id??i, user:x.username||"Unknown", username:x.metadata?.author_tag||x.username||"unknown", user_id:x.target_user_id||x.user_id, action:x.action||"-", message:x.content||x.message||"-", reason:x.reason||"-", time:x.createdAt||x.created_at||x.time||"-" })); }
+
+    function renderRules(rules){ if(!rules.length){ rulesList.innerHTML = `<div class="empty">No moderation rules configured.</div>`; return; }
+      rulesList.innerHTML = rules.map((r)=>`<article class="rule"><div class="row" style="justify-content:space-between"><strong>${r.type}</strong><button class="btn" data-del="${r.id}" type="button">Delete</button></div><div class="mono">${r.pattern}</div><div class="row"><span class="chip">Action: ${r.action}</span><span class="chip">${r.enabled?"Active":"Disabled"}</span>${r.reason?`<span class="chip">${r.reason}</span>`:""}</div></article>`).join("");
+      rulesList.querySelectorAll("[data-del]").forEach((b)=>b.addEventListener("click",()=>deleteRule(b.getAttribute("data-del")))); }
+
+    function renderEvents(events){
+      if(!events.length) { eventsBody.innerHTML = ""; eventsEmpty.hidden = false; return; }
+      eventsEmpty.hidden = true;
+      eventsBody.innerHTML = events.map((e)=>{
+        const dateStr = new Date(e.time * 1000).toLocaleString();
+        const userId = e.user_id || "";
+        const displayName = e.user || "Unknown";
+        return `<tr><td style="white-space:nowrap; font-size: 13px; color: var(--muted)">${dateStr}</td><td><div class="user-cell" title="Click to copy ID: ${userId}" onclick="copyToClipboard('${userId}', this)" style="cursor:pointer; position:relative"><strong style="color: var(--accent-light)">${displayName}</strong><div style="font-size: 11px; color: var(--muted)">@${e.username || 'unknown'}</div></div></td><td><span class="chip" style="border-color: ${e.action === 'delete' ? 'rgba(248,113,113,0.3)' : 'rgba(0,242,255,0.3)'}">${e.action}</span></td><td><div class="message-bubble" style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); max-width: 400px; font-size: 14px; line-height: 1.4; word-break: break-word;">${e.message || '<em style="color:var(--muted)">No content logged</em>'}</div></td><td style="font-size: 13px;">${e.reason}</td></tr>`;
+      }).join("");
+    }
+
+    async function copyToClipboard(text, el) {
+      if(!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const rect = el.getBoundingClientRect();
+        const toast = document.createElement('div');
+        toast.textContent = "ID Copied!";
+        toast.style.cssText = `position: fixed; top: ${rect.top - 30}px; left: ${rect.left}px; background: var(--accent-green); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; z-index: 10000; pointer-events: none; transition: opacity 0.5s;`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 1000);
+      } catch (err) { console.error('Failed to copy: ', err); }
+    }
+
+    async function loadRules(){ if(!guildId) return setStatus("Missing guild_id in query string.", true); try { const r = await fetchJSON(`/api/pro/moderation/${encodeURIComponent(guildId)}/rules`); renderRules(normalizeRules(r)); } catch(e){ renderRules([]); setStatus(e.message || "Failed to load rules.", true);} }
+    async function loadEvents(){ if(!guildId) return; try { const r = await fetchJSON(`/api/pro/moderation/${encodeURIComponent(guildId)}/rules`); renderEvents(normalizeEvents(r)); } catch { renderEvents([]); } }
+
+    async function deleteRule(id){ if(!guildId||!id) return; setStatus("Deleting rule..."); const base = `/api/pro/moderation/${encodeURIComponent(guildId)}/rules`; const attempts = [ ()=>fetchJSON(`${base}/${encodeURIComponent(id)}`,{method:"DELETE"}), ()=>fetchJSON(`${base}?id=${encodeURIComponent(id)}`,{method:"DELETE"}), ()=>fetchJSON(base,{method:"DELETE",body:{id,rule_id:id}}) ];
+      let ok = false; for(const fn of attempts){ try{ await fn(); ok = true; break; } catch{} } if(!ok) return setStatus("Unable to delete rule.", true); clearStatus(); loadRules(); }
+
+    document.getElementById("ruleForm").addEventListener("submit", async (e)=>{ e.preventDefault(); if(!guildId) return setStatus("Missing guild_id in query string.", true);
+      const body = { type: document.getElementById("type").value, pattern: document.getElementById("pattern").value.trim(), regex: document.getElementById("pattern").value.trim(), action: document.getElementById("action").value, reason: document.getElementById("reason").value.trim() || null };
+      if(!body.pattern) return setStatus("Pattern is required.", true);
+      const btn = document.getElementById("addBtn"); btn.disabled = true; setStatus("Creating rule...");
+      try { await fetchJSON(`/api/pro/moderation/${encodeURIComponent(guildId)}/rules`, { method: "POST", body }); e.target.reset(); clearStatus(); loadRules(); }
+      catch(err){ setStatus(err.message || "Failed to create rule.", true); }
+      finally { btn.disabled = false; }
+    });
+
+    document.getElementById("triageBtn").addEventListener("click", async ()=>{
+      if(!guildId) return setStatus("Missing guild_id in query string.", true);
+      const text = document.getElementById("triageText").value.trim(); if(!text) return setStatus("Enter message content first.", true);
+      setStatus("Running triage...");
+      try { const raw = await fetchJSON(`/api/pro/moderation/${encodeURIComponent(guildId)}/triage`, { method: "POST", body: { message: text, text, content: text } });
+        const root = raw.data || raw.result || raw || {}; const action = root.action || root.decision || "allow"; const conf = Number(root.confidence ?? root.score ?? 0); const reasons = Array.isArray(root.reasons) ? root.reasons : [];
+        document.getElementById("triageOut").className = "card"; document.getElementById("triageOut").innerHTML = `<div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)">Suggested Action</div><div style="font-size:1.4rem;font-weight:700">${String(action).toUpperCase()}</div><div>Confidence: ${Number.isFinite(conf)?conf.toFixed(2):"-"}</div><div style="margin-top:6px">${reasons.length?reasons.map((r)=>`<div class='chip' style='margin:2px'>${r}</div>`).join(""):"No explicit reasons."}</div>`; clearStatus(); }
+      catch(err){ document.getElementById("triageOut").className = "empty"; document.getElementById("triageOut").textContent = "No triage result available."; setStatus(err.message || "Failed triage.", true); }
+    });
+
+    document.getElementById("reloadBtn").addEventListener("click", loadRules);
+    document.querySelectorAll(".tab").forEach((t)=>t.addEventListener("click",()=>{ document.querySelectorAll(".tab").forEach((x)=>x.classList.remove("active")); t.classList.add("active"); const tab = t.dataset.tab; rulesTab.style.display = tab === "rules" ? "grid" : "none"; rulesList.style.display = tab === "rules" ? "grid" : "none"; eventsTab.style.display = tab === "events" ? "block" : "none"; clearStatus(); if(tab === "events") loadEvents(); }));
+
+    loadRules();
+  </script>
+</body>
+</html>

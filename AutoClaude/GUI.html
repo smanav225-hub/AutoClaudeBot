@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoClaude Pro - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Sora:wght@500;700&display=swap');
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: #000000;
+            color: #eeeeee;
+        }
+
+        .sidebar {
+            background-color: #050505;
+            width: 240px;
+            border-right: 1px solid #111111;
+        }
+
+        .main-content {
+            background-color: #000000;
+        }
+
+        .card {
+            background-color: #080808;
+            border: 1px solid #1a1a1a;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #00F2FF;
+            background-color: #0c0c0c;
+            box-shadow: 0 15px 35px rgba(0, 242, 255, 0.1);
+        }
+
+        .sidebar-item {
+            color: #777777;
+            transition: all 0.2s;
+            font-size: 17px;
+        }
+
+        .sidebar-item span {
+            font-size: 17px;
+        }
+
+        .sidebar-item:hover {
+            background-color: #111111;
+            color: #00F2FF;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        }
+
+        .active-sidebar-item {
+            background-color: #111111;
+            color: #00F2FF;
+            border: 1px solid #1e4f5b;
+        }
+
+        /* Light Cyan Buttons with Cool Hover */
+        .btn-cyan {
+            background-color: rgba(0, 242, 255, 0.1);
+            color: #00F2FF;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-cyan:hover {
+            background-color: rgba(0, 242, 255, 0.25);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            border-color: #00F2FF;
+        }
+
+        .btn-upcoming {
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            background-color: transparent;
+            color: #f87171;
+            cursor: default;
+        }
+
+        /* Dark Monochromatic Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #151515;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #222222;
+        }
+
+        /* Expanded card grid (approx 15% wider total width) */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.75rem;
+        }
+
+        @media (max-width: 1400px) {
+            .card-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 1000px) {
+            .card-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .card-grid { grid-template-columns: 1fr; }
+        }
+
+        *:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <div class="sidebar flex flex-col h-full">
+        <div class="p-6 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center border border-cyan-400/30">
+                <div class="w-3 h-3 bg-white rounded-full"></div>
+            </div>
+            <span class="text-xl font-bold text-white tracking-tight">AutoClaude</span>
+        </div>
+
+        <div class="px-4 py-2 relative">
+            <button id="serverDropdownBtn"
+                class="w-full flex items-center justify-between px-3 py-2 bg-[#0a0a0a] rounded-md text-white text-sm font-medium hover:bg-[#111] transition-colors border border-[#1a1a1a]">
+                <div class="flex items-center space-x-2">
+                    <div class="w-5 h-5 bg-gray-800 rounded flex items-center justify-center text-[10px]">ACT</div>
+                    <span id="selectedServerName" class="truncate">Select Server</span>
+                </div>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+            </button>
+
+            <!-- Server Dropdown Menu -->
+            <div id="serverListContainer"
+                class="hidden absolute left-4 right-4 mt-1 bg-[#0a0a0a] border border-[#1a1a1a] rounded-md shadow-xl z-50 max-h-60 overflow-y-auto">
+                <div id="serverList" class="py-1">
+                    <div class="px-3 py-2 text-xs text-gray-400">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 space-y-1 mt-6">
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer active-sidebar-item">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="text-sm font-medium">Dashboard</span>
+            </div>
+            <div id="settingsSidebarItem" class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span class="text-sm font-medium">Settings</span>
+            </div>
+
+            <div class="pt-6 pb-2 px-3 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                <span>Essentials</span>
+            </div>
+
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Welcome & Goodbye">
+                <span class="text-sm">👋</span>
+                <span class="text-sm font-medium">Welcome</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Commmands">
+                <span class="text-sm">⌨️</span>
+                <span class="text-sm font-medium">Commands</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Reaction Roles">
+                <span class="text-sm">🎭</span>
+                <span class="text-sm font-medium">Reaction Roles</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Levels">
+                <span class="text-sm">⭐</span>
+                <span class="text-sm font-medium">Levels</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="LeaderBoard">
+                <span class="text-sm">🏆</span>
+                <span class="text-sm font-medium">Leaderboard</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Scheduled Announcements">
+                <span class="text-sm">📅</span>
+                <span class="text-sm font-medium">Announcements</span>
+            </div>
+
+            <div class="pt-6 pb-2 px-3 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                <span>Pro Suite</span>
+            </div>
+
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Health Analytics">
+                <i data-lucide="activity" class="w-4 h-4 text-cyan-400/60"></i>
+                <span class="text-sm font-medium">Health</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Ranking Pro">
+                <i data-lucide="trophy" class="w-4 h-4 text-cyan-400/60"></i>
+                <span class="text-sm font-medium">Ranking Pro</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="AI Moderation">
+                <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400/60"></i>
+                <span class="text-sm font-medium">AI Mod</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Network Graph">
+                <i data-lucide="share-2" class="w-4 h-4 text-cyan-400/60"></i>
+                <span class="text-sm font-medium">Network</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3 px-3 py-2 rounded-md cursor-pointer sidebar-feature" data-feature-title="Profile Pro">
+                <i data-lucide="user-round" class="w-4 h-4 text-cyan-400/60"></i>
+                <span class="text-sm font-medium">Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col main-content overflow-y-auto">
+        <div class="p-8 max-w-[1350px] mx-auto w-full">
+            <header class="mb-10">
+                <h1 class="text-3xl font-bold text-white mb-1">Essentials</h1>
+                <p class="text-gray-500 text-sm">Core community engagement tools.</p>
+            </header>
+
+            <div class="card-grid mb-16">
+                <!-- Card 1 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer" data-feature-title="Welcome & Goodbye">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="hand" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Welcome</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Send automated join/leave messages and auto-roles. Customize your server's first impression with beautiful welcome cards and embeds.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Enable
+                    </button>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer" data-feature-title="Commmands">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="message-square" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Commands</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Configure internal server slash commands. Manage permissions, cooldowns, and custom command aliases for your community.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Enable
+                    </button>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer" data-feature-title="Reaction Roles">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Reaction Roles</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Self-assignable roles via emoji reactions. Let members choose their own roles, colors, and access levels with a single click.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Enable
+                    </button>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card rounded-lg p-7 flex flex-col" data-feature-title="Moderator">
+                    <div class="w-12 h-12 bg-white/5 rounded-md flex items-center justify-center text-gray-600 mb-5 border border-white/5">
+                        <i data-lucide="shield" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Moderator</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Advanced manual and auto moderation tools. Keep your server safe with word filters, link blocking, and powerful staff commands.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-upcoming text-sm font-bold">
+                        UPCOMING
+                    </button>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer" data-feature-title="Levels">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="trending-up" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Levels</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        XP and leveling system with role rewards. Encourage active participation by rewarding your most engaged members with special ranks.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Enable
+                    </button>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="card rounded-lg p-7 flex flex-col" data-feature-title="Achievements">
+                    <div class="w-12 h-12 bg-white/5 rounded-md flex items-center justify-center text-gray-600 mb-5 border border-white/5">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Achievements</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Reward user milestones with badges. Track long-term progress and unlock unique digital collectibles for consistent server activity.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-upcoming text-sm font-bold">
+                        UPCOMING
+                    </button>
+                </div>
+
+                <!-- Card 7 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer" data-feature-title="Leaderboard">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="star" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Leaderboard</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Track XP rankings in a clean table view. Show off your top members and foster healthy competition within your community.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Enable
+                    </button>
+                </div>
+
+                <!-- Card 8 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer" data-feature-title="Scheduled Announcements">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="calendar" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Announcements</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Schedule future messages or embeds. Plan your server updates and community events in advance with automated posting.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Enable
+                    </button>
+                </div>
+            </div>
+
+            <header class="mb-10">
+                <h1 class="text-3xl font-bold text-white mb-1">Pro Suite</h1>
+                <p class="text-cyan-500/80 text-sm">Deep analytics and AI tools.</p>
+            </header>
+
+            <div class="card-grid">
+                <!-- Pro Card 1 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer border-cyan-500/10" data-feature-title="Health Analytics">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="activity" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Health</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Hourly rollups and activity trends. Monitor your server's growth, peak activity hours, and overall community engagement metrics.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Open
+                    </button>
+                </div>
+
+                <!-- Pro Card 2 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer border-cyan-500/10" data-feature-title="Ranking Pro">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="trophy" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Ranking Pro</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Time-sliced advanced rankings. Deep dive into user performance with daily, weekly, and monthly activity filters.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Open
+                    </button>
+                </div>
+
+                <!-- Pro Card 3 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer border-cyan-500/10" data-feature-title="AI Moderation">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">AI Mod</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Semantic DeepSeek toxicity filtering. Use state-of-the-art AI to detect harassment and spam that regular word filters miss.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Open
+                    </button>
+                </div>
+
+                <!-- Pro Card 4 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer border-cyan-500/10" data-feature-title="Network Graph">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="share-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Network</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        D3.js social interaction visualizer. Explore the complex web of mentions and replies to find the true influencers in your server.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Open
+                    </button>
+                </div>
+
+                <!-- Pro Card 5 -->
+                <div class="card rounded-lg p-7 flex flex-col cursor-pointer border-cyan-500/10" data-feature-title="Profile Pro">
+                    <div class="w-12 h-12 bg-cyan-500/10 rounded-md flex items-center justify-center text-cyan-400 mb-5 border border-cyan-500/20">
+                        <i data-lucide="user-round" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Profile</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                        Member heatmaps and badge grids. Give users a professional portfolio of their server contributions and earned achievements.
+                    </p>
+                    <button class="w-full py-2 rounded-md btn-cyan text-sm font-bold transition-all">
+                        Open
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container (Narrower for individual features) -->
+    <div id="welcomeModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-[100] backdrop-blur-md">
+        <div class="relative w-[95%] max-w-[950px] h-[90vh] bg-[#000000] rounded-xl shadow-2xl overflow-hidden border border-white/5">
+            <!-- Simple Close Button -->
+            <button id="closeModal" class="absolute top-4 right-4 text-gray-600 hover:text-white transition-all z-[120]">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+
+            <!-- Settings Iframe -->
+            <iframe id="settingsIframe" src="" class="w-full h-full border-none"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        lucide.createIcons();
+
+        let currentGuildId = null;
+        let dropdownOpen = false;
+        let servers = [];
+
+        const serverDropdownBtn = document.getElementById('serverDropdownBtn');
+        const serverListContainer = document.getElementById('serverListContainer');
+        const serverList = document.getElementById('serverList');
+        const selectedServerName = document.getElementById('selectedServerName');
+        const welcomeModal = document.getElementById('welcomeModal');
+        const closeModal = document.getElementById('closeModal');
+        const settingsIframe = document.getElementById('settingsIframe');
+        const settingsSidebarItem = document.getElementById('settingsSidebarItem');
+
+        function toggleServerDropdown(e) {
+            if (e) e.stopPropagation();
+            dropdownOpen = !dropdownOpen;
+            if (dropdownOpen) {
+                serverListContainer.classList.remove('hidden');
+                renderServerList();
+            } else {
+                serverListContainer.classList.add('hidden');
+            }
+        }
+
+        function renderServerList() {
+            serverList.innerHTML = '';
+            if (servers.length === 0) {
+                serverList.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No servers found.</div>';
+                return;
+            }
+
+            servers.forEach(server => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center space-x-3 px-3 py-2 hover:bg-[#111] cursor-pointer transition-colors';
+                const iconHtml = server.icon
+                    ? `<img src="${server.icon}" class="w-6 h-6 rounded-full" />`
+                    : `<div class="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white">${server.name.charAt(0)}</div>`;
+
+                item.innerHTML = `
+                    ${iconHtml}
+                    <div class="flex-1 min-w-0">
+                        <div class="text-white text-xs font-medium truncate">${server.name}</div>
+                        <div class="text-gray-500 text-[10px]">${server.member_count} members</div>
+                    </div>
+                `;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selectServer(server);
+                };
+                serverList.appendChild(item);
+            });
+        }
+
+        async function selectServer(server) {
+            selectedServerName.innerText = server.name;
+            currentGuildId = server.id;
+            dropdownOpen = false;
+            serverListContainer.classList.add('hidden');
+
+            try {
+                await fetch(`${API_BASE}/api/guilds/${server.id}/select`);
+                if (!welcomeModal.classList.contains('hidden')) {
+                    const currentSrc = settingsIframe.src;
+                    if (currentSrc.includes('guild_id=')) {
+                        const newUrl = new URL(currentSrc);
+                        newUrl.searchParams.set('guild_id', server.id);
+                        settingsIframe.src = newUrl.toString();
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function initializeApp() {
+            try {
+                const response = await fetch(`${API_BASE}/api/servers`);
+                const data = await response.json();
+                if (data.success && data.servers && data.servers.length > 0) {
+                    servers = data.servers;
+                    const targetId = data.last_server || servers[0].id;
+                    const serverToSelect = servers.find(s => s.id === targetId) || servers[0];
+                    await selectServer(serverToSelect);
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function openFeature(title) {
+            if (!currentGuildId) {
+                alert("Please select a server first!");
+                return;
+            }
+
+            let targetUrl = "";
+            const t = title.toLowerCase();
+            if (t.includes('welcome')) targetUrl = `${API_BASE}/gui/welcome-goodbye?guild_id=${currentGuildId}`;
+            else if (t.includes('commmand')) targetUrl = `${API_BASE}/gui/Commands.html?guild_id=${currentGuildId}`;
+            else if (t.includes('level')) targetUrl = `${API_BASE}/gui/Level.html?guild_id=${currentGuildId}`;
+            else if (t.includes('leaderboard') && !t.includes('pro')) targetUrl = `${API_BASE}/gui/Leaderboard.html?guild_id=${currentGuildId}`;
+            else if (t.includes('reaction role')) targetUrl = `${API_BASE}/gui/reaction-roles?guild_id=${currentGuildId}`;
+            else if (t.includes('announcement')) targetUrl = `${API_BASE}/gui/scheduled-announcement?guild_id=${currentGuildId}`;
+            else if (t.includes('health')) targetUrl = `${API_BASE}/gui/Health_Analytics.html?guild_id=${currentGuildId}`;
+            else if (t.includes('ranking pro')) targetUrl = `${API_BASE}/gui/Leaderboard_Pro.html?guild_id=${currentGuildId}`;
+            else if (t.includes('ai mod')) targetUrl = `${API_BASE}/gui/Moderation_Pro.html?guild_id=${currentGuildId}`;
+            else if (t.includes('network')) targetUrl = `${API_BASE}/gui/Network_Graph.html?guild_id=${currentGuildId}`;
+            else if (t.includes('profile')) targetUrl = `${API_BASE}/gui/Profile_Pro.html?guild_id=${currentGuildId}`;
+
+            if (targetUrl) {
+                settingsIframe.src = targetUrl;
+                welcomeModal.classList.remove('hidden');
+            }
+        }
+
+        serverDropdownBtn.addEventListener('click', toggleServerDropdown);
+        document.addEventListener('click', (e) => {
+            if (dropdownOpen && !serverDropdownBtn.contains(e.target) && !serverListContainer.contains(e.target)) {
+                toggleServerDropdown();
+            }
+        });
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                const title = card.getAttribute('data-feature-title');
+                openFeature(title);
+            });
+        });
+
+        document.querySelectorAll('.sidebar-feature').forEach(item => {
+            item.addEventListener('click', () => {
+                const title = item.getAttribute('data-feature-title');
+                openFeature(title);
+            });
+        });
+
+        settingsSidebarItem.addEventListener('click', () => {
+            const url = currentGuildId ? `${API_BASE}/gui/Setting.html?guild_id=${currentGuildId}` : `${API_BASE}/gui/Setting.html`;
+            settingsIframe.src = url;
+            welcomeModal.classList.remove('hidden');
+        });
+
+        closeModal.addEventListener('click', () => {
+            welcomeModal.classList.add('hidden');
+            settingsIframe.src = "";
+        });
+
+        window.closeComponent = () => {
+            welcomeModal.classList.add('hidden');
+            settingsIframe.src = "";
+        };
+
+        initializeApp();
+    </script>
+</body>
+
+</html>

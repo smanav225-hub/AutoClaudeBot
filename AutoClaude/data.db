@@ -1,0 +1,259 @@
+{
+    "token": "",
+    "settings": {
+        "hi_emoji": "\ud83d\udc4b",
+        "hi_enabled": true,
+        "github_token": "",
+        "commands_analytics": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_github": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_level": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_leaderboard": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_achievements": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_afk": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_autorole": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_backup": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_event": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_events": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_giveaway_export": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_health_check": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_help_admin": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_help": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_leaderboard_post": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_level_rewards": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_moderation": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_ping": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_poll": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_profile": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_punishment": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_quests": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_reputation_config": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_role_config": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_role": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_thank": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_ticket_setup": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_ticket": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        },
+        "commands_xp": {
+            "enabled": true,
+            "role_ids": [
+                "1468128565823541427"
+            ]
+        }
+    },
+    "last_server": "1468128565823541427",
+    "servers": {
+        "1468128565823541427": {
+            "reputation": {
+                "daily_cap": 5,
+                "reciprocal_window": 24
+            },
+            "tickets": {
+                "enabled": false,
+                "support_role_id": null,
+                "category_id": null,
+                "log_channel_id": null
+            },
+            "levels": {
+                "enabled": false,
+                "xp_rate": 1,
+                "xp_rate_min": 0.5,
+                "xp_rate_max": 10,
+                "cooldown": 1,
+                "xp_min": 15,
+                "xp_max": 25,
+                "role_rewards_enabled": true,
+                "remove_previous_role": false,
+                "rewards": [],
+                "announce_enabled": false,
+                "announce_message": "GG {user}, you hit Level {level}! (Rank: {ordinal})",
+                "announce_channel_id": "1470528364526833674",
+                "active_tab": "Rank Card",
+                "no_xp_channels": [],
+                "no_xp_roles": []
+            },
+            "join": {
+                "enabled": false,
+                "channel": null,
+                "mode": "text",
+                "text": "Hey {user}, welcome to **{server}**!"
+            },
+            "leave": {
+                "enabled": false,
+                "channel": null,
+                "text": "{user} has left the server."
+            },
+            "autorole": {
+                "enabled": false,
+                "role_id": null
+            }
+        },
+        "__pro_verify__": {
+            "pro_lifecycle": {
+                "timezone": "UTC",
+                "weekly_reset_enabled": false,
+                "monthly_reset_enabled": false
+            }
+        },
+        "123456789": {
+            "levels": {
+                "dm_enabled": true,
+                "milestone_roles": {},
+                "xp_min": 10,
+                "xp_max": 10,
+                "cooldown": 10,
+                "levelup_channel_id": "999"
+            },
+            "reputation": {
+                "daily_cap": 10,
+                "reciprocal_hours": 10
+            },
+            "tickets": {
+                "category_id": "999"
+            },
+            "autorole": {
+                "role_id": null,
+                "enabled": true
+            },
+            "test": 1
+        }
+    }
+}

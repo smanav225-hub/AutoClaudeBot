@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #1a1b1e;
+            --card-bg: #2a2c31;
+            --card-hover: #313339;
+            --text-main: #ffffff;
+            --text-sub: #b5bac1;
+            --accent-blue: #5865f2;
+            --toggle-off: #4e5058;
+            --scrollbar-thumb: #111214;
+            --editor-bg: #1e1f22;
+            --preview-bg: #000000;
+            --border: #3f4147;
+        }
+
+        body {
+            font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px 24px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            overflow-y: overlay;
+            font-size: 15px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--scrollbar-thumb);
+            border: 3px solid var(--bg-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #6d6f78;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding-bottom: 100px;
+            overflow: visible;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 0;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .close-btn {
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title-group">
+                <i data-lucide="chevron-left" class="close-btn" onclick="window.parent.closeComponent()"></i>
+                <div class="w-2 h-2 rounded-full bg-accent-blue"></div>
+                <h1>Leaderboard</h1>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center py-32 text-center">
+            <div class="bg-blue-600/20 text-blue-400 px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase mb-4 border border-blue-500/30">
+                UPCOMING
+            </div>
+            <p class="text-emerald-400 text-lg">
+                Command for leaderboard is added, see commands. Use <code class="bg-[#1e1f22] px-2 py-0.5 rounded text-[#5865f2]">/leaderboard</code> in discord to use leaderboard
+            </p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
