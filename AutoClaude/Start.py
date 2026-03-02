@@ -8,18 +8,24 @@ import socket
 def kill_process_on_port(port):
     """Kills any process currently using the specified port on Windows."""
     try:
-        # Find the PID using netstat
-        result = subprocess.check_output(f"netstat -ano | findstr :{port}", shell=True).decode()
-        for line in result.splitlines():
-            if "LISTENING" in line:
-                pid = line.strip().split()[-1]
-                if pid != "0":
-                    print(f"[CLEANUP] Found ghost process (PID {pid}) on port {port}. Killing it...")
-                    subprocess.run(f"taskkill /F /PID {pid}", shell=True, capture_output=True)
-                    time.sleep(1) # Give OS time to release the port
+        # Find the PID using netstat specifically for the listening port
+        output = subprocess.check_output(f"netstat -ano | findstr LISTENING | findstr :{port}", shell=True).decode()
+        pids = set()
+        for line in output.splitlines():
+            parts = line.strip().split()
+            if parts:
+                pids.add(parts[-1])
+        
+        for pid in pids:
+            if pid != "0":
+                print(f"[CLEANUP] Killing process tree for PID {pid} on port {port}...")
+                # /F = force, /T = tree kill (kills child processes too)
+                subprocess.run(f"taskkill /F /T /PID {pid}", shell=True, capture_output=True)
+        
+        if pids:
+            time.sleep(2) # Give OS more time to release the port
     except subprocess.CalledProcessError:
-        # No process found on this port, which is fine
-        pass
+        pass # No process found
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
