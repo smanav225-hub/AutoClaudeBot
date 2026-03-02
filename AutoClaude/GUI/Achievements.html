@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Achievements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;600&display=swap');
+
+        :root {
+            --bg: #050507;
+            --card: #0c0c10;
+            --accent: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.15);
+            --text: #ffffff;
+            --text-muted: #9494a0;
+            --border: rgba(255, 255, 255, 0.06);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(0, 242, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(88, 101, 242, 0.03) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        h1, h2, h3 { font-family: 'Sora', sans-serif; }
+
+        .glass-header {
+            background: rgba(5, 5, 7, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 28px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .ach-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ach-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .ach-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 242, 255, 0.4);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 20px var(--accent-glow);
+        }
+
+        .ach-card:hover::after { opacity: 1; }
+
+        .ach-icon-container {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.1) 0%, rgba(0, 242, 255, 0.05) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ach-card:hover .ach-icon-container {
+            transform: scale(1.1) rotate(-5deg);
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .earner-tag {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .ach-card:hover .earner-tag {
+            color: var(--accent);
+            border-color: rgba(0, 242, 255, 0.2);
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        /* Modal Redesign */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #0e0e12;
+            width: 95%;
+            max-width: 540px;
+            max-height: 85vh;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(40px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-overlay.active .modal-content { 
+            transform: translateY(0) scale(1); 
+        }
+
+        .modal-header {
+            padding: 32px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .user-list {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .user-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 20px;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+
+        .user-row:hover { 
+            background: rgba(255, 255, 255, 0.03);
+            border-color: var(--border);
+        }
+
+        .avatar-box {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #1a1a24 0%, #0a0a0c 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent);
+            border: 1px solid var(--border);
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 100px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Dark Themed Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050507;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1a1a24;
+            border-radius: 10px;
+            border: 2px solid #050507;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #252533;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #1a1a24 #050507;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-header px-8 py-6 flex justify-between items-center">
+        <div class="flex items-center gap-6">
+            <button onclick="window.parent.closeComponent()" class="hover:bg-white/10 p-3 rounded-2xl transition-all text-text-muted hover:text-white border border-transparent hover:border-white/10">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            </button>
+            <div>
+                <h1 class="text-3xl font-black tracking-tight text-white italic">MILESTONES</h1>
+                <p class="text-sm font-medium text-text-muted uppercase tracking-[0.2em]">Live Database Integration</p>
+            </div>
+        </div>
+        <div class="status-pill text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+            Node Linked
+        </div>
+    </div>
+
+    <div id="achievementsList" class="achievement-grid">
+        <!-- Cards will be injected here -->
+        <div class="col-span-full py-40 text-center">
+            <div class="inline-block p-6 rounded-3xl bg-white/5 border border-white/5 animate-pulse">
+                <i data-lucide="refresh-cw" class="w-10 h-10 text-accent animate-spin"></i>
+            </div>
+            <p class="mt-6 text-lg font-semibold tracking-wide text-text-muted uppercase">Fetching Protocol Data...</p>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="modal" class="modal-overlay" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="text-[10px] font-black tracking-[0.3em] text-accent uppercase mb-2 block">System Log</span>
+                    <h2 id="modalTitle" class="text-2xl font-extrabold text-white">Earners</h2>
+                    <p id="modalDesc" class="text-sm text-text-muted mt-2 font-medium"></p>
+                </div>
+                <button onclick="closeModal()" class="bg-white/5 hover:bg-white/10 p-2 rounded-xl transition-all text-text-muted hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="userList" class="user-list">
+                <!-- User rows injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const urlParams = new URLSearchParams(window.location.search);
+        const guildId = urlParams.get('guild_id');
+
+        async function loadStats() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/achievements/stats/${guildId}`);
+                const data = await resp.json();
+                if (data.success) renderCards(data.achievements);
+            } catch (e) {
+                console.error("Load failed", e);
+            }
+        }
+
+        function renderCards(achievements) {
+            const container = document.getElementById('achievementsList');
+            container.innerHTML = '';
+
+            achievements.forEach((ach, index) => {
+                const card = document.createElement('div');
+                card.className = 'ach-card animate-in';
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.onclick = () => openUserList(ach.id, ach.name, ach.description);
+                
+                const icon = ach.type === 'level' ? 'trending-up' : 'message-square';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="ach-icon-container">
+                            <i data-lucide="${icon}" class="w-8 h-8"></i>
+                        </div>
+                        <div class="earner-tag">${ach.count} MEMBERS</div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 uppercase tracking-tight">${ach.name}</h3>
+                        <p class="text-sm text-text-muted leading-relaxed font-medium">${ach.description}</p>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                        <span class="text-[10px] font-black tracking-widest text-white/20 uppercase">${ach.type} TYPE</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-white/10"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        async function openUserList(achId, name, desc) {
+            const modal = document.getElementById('modal');
+            const list = document.getElementById('userList');
+            const title = document.getElementById('modalTitle');
+            const description = document.getElementById('modalDesc');
+
+            title.innerText = name.toUpperCase();
+            description.innerText = desc;
+            list.innerHTML = `
+                <div class="p-20 text-center">
+                    <i data-lucide="loader-2" class="animate-spin w-10 h-10 text-accent inline-block"></i>
+                </div>
+            `;
+            lucide.createIcons();
+            
+            modal.classList.add('active');
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/achievements/members/${guildId}/${achId}`);
+                const data = await resp.json();
+                
+                if (data.success) {
+                    list.innerHTML = data.members.map(u => `
+                        <div class="user-row">
+                            <div class="avatar-box">${u.username.charAt(0).toUpperCase()}</div>
+                            <div class="flex-1">
+                                <div class="font-bold text-white tracking-tight">${u.username}</div>
+                                <div class="text-[10px] text-text-muted font-mono mt-1 opacity-50">${u.user_id}</div>
+                            </div>
+                            <div class="text-[10px] font-black bg-white/5 px-3 py-1.5 rounded-lg text-text-muted tracking-tighter">
+                                UID:${u.user_id.slice(-4)}
+                            </div>
+                        </div>
+                    `).join('') || `
+                        <div class="p-20 text-center text-text-muted">
+                            <i data-lucide="ghost" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                            <p class="text-sm font-bold uppercase tracking-widest opacity-40">No entries in registry</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                list.innerHTML = '<p class="p-20 text-center text-red-400 font-bold uppercase tracking-widest">Protocol Sync Error</p>';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        lucide.createIcons();
+        if (guildId) loadStats();
+    </script>
+</body>
+</html>

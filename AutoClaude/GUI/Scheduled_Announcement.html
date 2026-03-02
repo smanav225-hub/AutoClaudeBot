@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Announcement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #1a1b1e;
+            --card-bg: #2a2c31;
+            --card-hover: #313339;
+            --text-main: #ffffff;
+            --text-sub: #b5bac1;
+            --accent-blue: #5865f2;
+            --toggle-off: #4e5058;
+            --scrollbar-thumb: #111214;
+            --editor-bg: #1e1f22;
+            --preview-bg: #000000;
+            --border: #3f4147;
+        }
+
+        body {
+            font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 30px;
+            display: flex;
+            justify-content: center;
+            overflow-y: overlay;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--scrollbar-thumb);
+            border: 3px solid var(--bg-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #6d6f78;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 0 4px;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .close-btn {
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Feature Cards */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feature-card-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+
+        .feature-card-container.allow-overflow {
+            overflow: visible;
+        }
+
+        .feature-card-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .feature-card-header:hover {
+            background-color: var(--card-hover);
+        }
+
+        .feature-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Expandable Section */
+        .expandable-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: #232529;
+        }
+
+        .expandable-section.active {
+            max-height: none !important; /* Allow unlimited expansion for pickers */
+            transition: max-height 0.4s cubic-bezier(1, 0, 1, 0);
+        }
+
+        .expandable-section.allow-overflow {
+            overflow: visible;
+        }
+
+        .feature-card-container.allow-overflow {
+            overflow: visible;
+        }
+
+        .config-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .dropdown-box {
+            background-color: var(--editor-bg);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.2s;
+        }
+
+        .dropdown-box:hover {
+            border-color: var(--accent-blue);
+            background-color: #2b2d31;
+        }
+
+        .dropdown-panel {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background-color: #111214;
+            border: 1px solid #2b2d31;
+            border-radius: 8px;
+            z-index: 100;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-sub);
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #404249;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+        }
+
+        .btn-discard {
+            background-color: #4f545c;
+            color: white;
+        }
+
+        .btn-save {
+            background-color: #2b2d31;
+            color: #b5bac1;
+        }
+        .btn-save:hover {
+            background-color: #3b3d44;
+            color: #ffffff;
+        }
+        .btn-save.clicked {
+            background-color: #5865f2;
+            color: #ffffff;
+        }
+
+        .btn-publish {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title-group">
+                <i data-lucide="chevron-left" class="close-btn" onclick="window.parent.closeComponent()"></i>
+                <div class="w-2 h-2 rounded-full bg-accent-blue"></div>
+                <h1>Schedule Announcement</h1>
+            </div>
+        </div>
+
+        <div class="feature-list">
+            <!-- Phase 1: Long Big Button with Expandable Section -->
+            <div class="feature-card-container" id="main_schedule_card">
+                <div class="feature-card-header" onclick="toggleMainSection()">
+                    <div class="feature-title flex items-center gap-3">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-accent-blue"></i>
+                        Schedule Annoucement
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="chevron-down" id="main_chevron" class="text-sub"></i>
+                    </div>
+                </div>
+                
+                <div id="main_schedule_section" class="expandable-section">
+                    <div id="content_area">
+                        <!-- Content will be added in Phase 2 via Message.js -->
+                        <div class="p-8 text-center text-sm text-gray-500">Loading component...</div>
+                    </div>
+                </div>
+            </div>
+            <div id="scheduled_list_container" class="feature-card-container">
+                <div class="feature-card-header">
+                    <div class="feature-title flex items-center gap-3">
+                        <i data-lucide="clock" class="w-5 h-5 text-accent-blue"></i>
+                        Scheduled Messages
+                    </div>
+                </div>
+                <div id="scheduled_list" class="config-content">
+                    <div class="text-sm text-gray-500">No scheduled announcements yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let state = { channel: null, channel_name: null, message_type: 'text' };
+        let componentLoaded = false;
+        
+        async function toggleMainSection() {
+            const section = document.getElementById('main_schedule_section');
+            const container = document.getElementById('main_schedule_card');
+            const chevron = document.getElementById('main_chevron');
+            
+            if (!componentLoaded) {
+                await loadMessageComponent();
+                componentLoaded = true;
+            }
+
+            const isActive = section.classList.toggle('active');
+            
+            if (isActive) {
+                chevron.outerHTML = '<i data-lucide="chevron-up" id="main_chevron" class="text-sub"></i>';
+                setTimeout(() => {
+                    section.classList.add('allow-overflow');
+                    container.classList.add('allow-overflow');
+                    section.style.maxHeight = 'none'; // Allow content to overflow frame
+                }, 400);
+            } else {
+                chevron.outerHTML = '<i data-lucide="chevron-down" id="main_chevron" class="text-sub"></i>';
+                section.classList.remove('allow-overflow');
+                container.classList.remove('allow-overflow');
+                section.style.maxHeight = null;
+            }
+            lucide.createIcons();
+        }
+
+        async function loadMessageComponent() {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = `/gui/Scheduled_Announcement/Message.js`;
+                script.onload = () => {
+                    if (window.SCHEDULED_MESSAGE_HTML) {
+                        document.getElementById('content_area').innerHTML = window.SCHEDULED_MESSAGE_HTML;
+                        if (window.initializeScheduledMessage) window.initializeScheduledMessage();
+                    }
+                    resolve();
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        function resetScheduledState() {
+            window.scheduledState = {
+                scheduled_datetime: new Date(new Date().getTime() + 10 * 60000),
+                channel: null,
+                channel_name: null,
+                message_type: 'text',
+                text: 'Hey {user}, welcome to **{server}**!',
+                card: {
+                    font: 'Inter',
+                    textColor: '#ffffff',
+                    bgColor: '#0b0f17',
+                    bgImage: '',
+                    opacity: 50,
+                    title: '{user} just joined the server',
+                    subtitle: 'Member # {membercount}'
+                },
+                embed: { color: '#ffffff' },
+                calViewDate: new Date()
+            };
+        }
+
+        let saEditMode = false;
+        let saEditId = null;
+        let scheduledCache = [];
+
+        function showError(message) {
+            const existing = document.getElementById('sa_error_popup');
+            if (existing) existing.remove();
+            const popup = document.createElement('div');
+            popup.id = 'sa_error_popup';
+            popup.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-[#ed4245] text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3 z-[2000]';
+            popup.innerHTML = `
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                <span class="font-semibold text-sm">${message}</span>
+                <i data-lucide="x" class="w-4 h-4 cursor-pointer ml-2 hover:opacity-80" onclick="this.parentElement.remove()"></i>
+            `;
+            document.body.appendChild(popup);
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function discardConfig() {
+            if (saEditMode && saEditId) {
+                discardScheduledAnnouncement(saEditId);
+                return;
+            }
+            resetScheduledState();
+
+            // Reset UI fields (if component is loaded)
+            if (typeof window.updateDateTimeDisplay === 'function') window.updateDateTimeDisplay();
+            const channelLabel = document.getElementById('sa_current_channel');
+            if (channelLabel) {
+                channelLabel.innerHTML = '<i data-lucide="hash" class="w-4 h-4"></i> Select a channel';
+                channelLabel.classList.add('text-gray-400');
+            }
+
+            const textInput = document.getElementById('sa_text_input');
+            if (textInput) textInput.value = window.scheduledState.text;
+            if (typeof window.updateSaText === 'function') window.updateSaText(window.scheduledState.text);
+
+            // Reset card preview + inputs
+            const fontLabel = document.getElementById('sa_current_font');
+            if (fontLabel) fontLabel.innerText = 'Inter';
+            const cardTitle = document.querySelector('#sa_tab_content_card input[placeholder*="just joined"]');
+            if (cardTitle) cardTitle.value = window.scheduledState.card.title;
+            const cardSubtitle = document.querySelector('#sa_tab_content_card input[placeholder*="Member #"]');
+            if (cardSubtitle) cardSubtitle.value = window.scheduledState.card.subtitle;
+            const bgLabel = document.getElementById('sa_card_bg_label');
+            if (bgLabel) bgLabel.innerText = 'No image selected';
+            const bgInput = document.getElementById('sa_card_bg_input');
+            if (bgInput) bgInput.value = '';
+            if (typeof window.applyCardStyles === 'function') window.applyCardStyles();
+
+            // Reset embed inputs (basic)
+            ['reaction_msg_main','embed_title_text','embed_desc_text','embed_field_name','embed_field_value','embed_header_text','embed_footer_text'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            ['header_img_preview','thumb_img_preview','main_img_preview','footer_img_preview'].forEach(id => {
+                const img = document.getElementById(id);
+                if (img) {
+                    img.src = '';
+                    img.classList.add('hidden');
+                    img.removeAttribute('data-saved-url');
+                    img.removeAttribute('data-is-new-upload');
+                }
+            });
+            ['header_img_icon','thumb_img_icon','main_img_icon','footer_img_icon'].forEach(id => {
+                const icon = document.getElementById(id);
+                if (icon) icon.classList.remove('hidden');
+            });
+
+            if (typeof window.saSwitchTab === 'function') window.saSwitchTab('text');
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        async function uploadImage(fileInput) {
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) return null;
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            try {
+                const resp = await fetch(`${API_BASE}/api/upload/image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+                return data.success ? data.url : null;
+            } catch (e) {
+                console.error('Image upload failed', e);
+                return null;
+            }
+        }
+
+        async function gatherEmbedData() {
+            const msgData = {
+                content: '',
+                title: '',
+                description: '',
+                color: '#ffffff',
+                fields: [],
+                footer: {},
+                author: {},
+                thumbnail: null,
+                image: null
+            };
+
+            const mainInput = document.getElementById('reaction_msg_main');
+            if (!mainInput) return msgData;
+
+            msgData.content = mainInput.value || '';
+            msgData.title = document.getElementById('embed_title_text')?.value || '';
+            msgData.description = document.getElementById('embed_desc_text')?.value || '';
+
+            const activeDot = document.querySelector('#color_picker_list .color-dot.active');
+            if (activeDot) msgData.color = activeDot.getAttribute('data-color');
+
+            const fname = document.getElementById('embed_field_name')?.value;
+            const fval = document.getElementById('embed_field_value')?.value;
+            if (fname && fval) msgData.fields.push({ name: fname, value: fval });
+
+            async function getImageUrl(inputId, previewId) {
+                const input = document.getElementById(inputId);
+                const preview = document.getElementById(previewId);
+                if (input && input.files && input.files[0]) {
+                    return await uploadImage(input);
+                }
+                if (preview && preview.getAttribute('data-saved-url')) {
+                    return preview.getAttribute('data-saved-url');
+                }
+                return null;
+            }
+
+            const authorImgUrl = await getImageUrl('header_img_input', 'header_img_preview');
+            const headerText = document.getElementById('embed_header_text')?.value;
+            if (authorImgUrl || headerText) {
+                msgData.author = { name: headerText || '', icon_url: authorImgUrl };
+            }
+
+            const thumbUrl = await getImageUrl('thumb_img_input', 'thumb_img_preview');
+            if (thumbUrl) msgData.thumbnail = thumbUrl;
+
+            const mainImgUrl = await getImageUrl('main_img_input', 'main_img_preview');
+            if (mainImgUrl) msgData.image = mainImgUrl;
+
+            const footerImgUrl = await getImageUrl('footer_img_input', 'footer_img_preview');
+            const footerText = document.getElementById('embed_footer_text')?.value;
+            if (footerImgUrl || footerText) {
+                msgData.footer = { text: footerText || '', icon_url: footerImgUrl };
+            }
+
+            return msgData;
+        }
+
+        async function saveConfig(shouldPost) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) {
+                showError('Please select a server first!');
+                return;
+            }
+
+            if (!window.scheduledState) return;
+            const saveBtn = document.getElementById('saSaveBtn');
+            if (saveBtn) {
+                saveBtn.classList.add('clicked');
+                setTimeout(() => saveBtn.classList.remove('clicked'), 1000);
+            }
+
+            if (shouldPost) {
+                if (!window.scheduledState.channel || !window.scheduledState.scheduled_datetime) {
+                    showError('Please select a channel and time.');
+                    return;
+                }
+                const hasText = (window.scheduledState.text || '').trim().length > 0;
+                const hasCard = window.scheduledState.card && (
+                    (window.scheduledState.card.title || '').trim().length > 0 ||
+                    (window.scheduledState.card.subtitle || '').trim().length > 0
+                );
+                const embedMain = document.getElementById('reaction_msg_main')?.value || '';
+                const embedTitle = document.getElementById('embed_title_text')?.value || '';
+                const embedDesc = document.getElementById('embed_desc_text')?.value || '';
+                const hasEmbed = (embedMain + embedTitle + embedDesc).trim().length > 0;
+                if (!hasText && !hasCard && !hasEmbed) {
+                    showError('Please add some message content before posting.');
+                    return;
+                }
+            }
+
+            const payload = {
+                channel: window.scheduledState.channel,
+                channel_name: window.scheduledState.channel_name,
+                scheduled_time: window.scheduledState.scheduled_datetime ? window.scheduledState.scheduled_datetime.toISOString() : null,
+                message_type: window.scheduledState.message_type || 'text',
+                status: shouldPost ? 'scheduled' : 'draft',
+                message: {}
+            };
+
+            if (payload.message_type === 'card') {
+                payload.message.card = window.scheduledState.card || {};
+            } else if (payload.message_type === 'embed') {
+                payload.message.embed = await gatherEmbedData();
+            } else {
+                payload.message.content = window.scheduledState.text || '';
+            }
+
+            try {
+                if (saEditMode && saEditId) {
+                    payload.id = saEditId;
+                    payload.status = 'scheduled';
+                    const updResp = await fetch(`${API_BASE}/api/publish/scheduled-announcement/${guildId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!updResp.ok) {
+                        showError('Failed to update scheduled announcement.');
+                        return;
+                    }
+                    saEditMode = false;
+                    saEditId = null;
+                    const postBtn = document.getElementById('saPostBtn');
+                    if (postBtn) postBtn.classList.remove('hidden');
+                    const editLabel = document.getElementById('sa_editing_label');
+                    if (editLabel) editLabel.classList.add('hidden');
+                    await loadScheduledList();
+                    if (document.getElementById('main_schedule_section').classList.contains('active')) {
+                        toggleMainSection();
+                    }
+                    return;
+                }
+
+                const resp = await fetch(`${API_BASE}/api/config/scheduled-announcement/${guildId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) {
+                    showError('Failed to save scheduled announcement.');
+                    return;
+                }
+                if (shouldPost) {
+                    const pub = await fetch(`${API_BASE}/api/publish/scheduled-announcement/${guildId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!pub.ok) {
+                        showError('Save ok, but post failed.');
+                        return;
+                    }
+                    toggleMainSection();
+                    resetScheduledState();
+                    const postBtn = document.getElementById('saPostBtn');
+                    if (postBtn) postBtn.classList.remove('hidden');
+                    const editLabel = document.getElementById('sa_editing_label');
+                    if (editLabel) editLabel.classList.add('hidden');
+                    await loadScheduledList();
+                }
+            } catch (e) {
+                console.error('Save failed', e);
+                showError('Save failed.');
+            }
+        }
+
+        function formatCountdown(targetIso, status) {
+            if (status === 'sent') return 'Sent';
+            const target = new Date(targetIso);
+            const now = new Date();
+            const diff = target - now;
+            if (isNaN(diff) || diff <= 0) return 'Overdue';
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            return `Sends in ${days}d ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+        }
+
+        function getAnnouncementTitle(item) {
+            if (!item) return 'Scheduled Message';
+            if (item.message_type === 'card') {
+                return item.message?.card?.title || 'Welcome Card';
+            }
+            if (item.message_type === 'embed') {
+                return item.message?.embed?.title || item.message?.embed?.description || 'Embed Message';
+            }
+            const txt = item.message?.content || '';
+            return txt.length > 60 ? `${txt.slice(0, 60)}...` : (txt || 'Text Message');
+        }
+
+        async function loadScheduledList() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) return;
+            try {
+                const resp = await fetch(`${API_BASE}/api/config/scheduled-announcements/${guildId}`);
+                const data = await resp.json();
+                if (data.success && data.announcements) {
+                    scheduledCache = data.announcements;
+                } else {
+                    scheduledCache = [];
+                }
+            } catch (e) {
+                scheduledCache = [];
+            }
+            renderScheduledList();
+        }
+
+        function renderScheduledList() {
+            const list = document.getElementById('scheduled_list');
+            if (!list) return;
+            list.innerHTML = '';
+            if (!scheduledCache || scheduledCache.length === 0) {
+                list.innerHTML = '<div class="text-sm text-gray-500">No scheduled announcements yet.</div>';
+                return;
+            }
+            scheduledCache.forEach(item => {
+                const row = document.createElement('div');
+                const isOverdue = item.status !== 'sent' && item.scheduled_time && (new Date(item.scheduled_time) - new Date() <= 0);
+                const isSent = item.status === 'sent';
+                row.className = 'flex items-center justify-between px-4 py-3 rounded-lg bg-[#1e1f22] border border-[#2b2d31] cursor-pointer hover:bg-[#2b2d31]';
+                row.setAttribute('data-id', item.id);
+                row.setAttribute('data-time', item.scheduled_time || '');
+                row.setAttribute('data-status', item.status || '');
+                const title = getAnnouncementTitle(item);
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-md bg-[#2b2d31] flex items-center justify-center text-xs text-white">🕒</div>
+                        <div>
+                            <div class="text-sm font-semibold ${isOverdue ? 'text-red-400' : ''}">${title}</div>
+                            <div class="text-xs text-gray-400">${item.channel_name || 'Unknown channel'}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-xs ${isOverdue ? 'text-red-400' : 'text-gray-400'}" data-countdown>${formatCountdown(item.scheduled_time, item.status)}</div>
+                        <button class="text-red-400 hover:text-red-300" data-delete title="Delete">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                row.querySelector('[data-delete]').onclick = (e) => {
+                    e.stopPropagation();
+                    discardScheduledAnnouncement(item.id);
+                };
+                row.querySelector('[data-countdown]').onclick = (e) => {
+                    e.stopPropagation();
+                    openScheduledAnnouncement(item.id);
+                };
+                row.onclick = () => openScheduledAnnouncement(item.id);
+                list.appendChild(row);
+            });
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function updateScheduledCountdowns() {
+            const rows = document.querySelectorAll('#scheduled_list [data-countdown]');
+            rows.forEach(el => {
+                const row = el.closest('[data-time]');
+                if (!row) return;
+                const time = row.getAttribute('data-time');
+                const status = row.getAttribute('data-status');
+                el.textContent = formatCountdown(time, status);
+                if (time && (new Date(time) - new Date() <= 0)) {
+                    el.classList.remove('text-gray-400');
+                    el.classList.add('text-red-400');
+                }
+            });
+        }
+
+        function openScheduledAnnouncement(id) {
+            const item = scheduledCache.find(a => a.id === id);
+            if (!item) return;
+            saEditMode = true;
+            saEditId = id;
+            if (typeof window.loadScheduledConfigFromItem === 'function') {
+                window.loadScheduledConfigFromItem(item);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const postBtn = document.getElementById('saPostBtn');
+            if (postBtn) postBtn.classList.add('hidden');
+            const editLabel = document.getElementById('sa_editing_label');
+            if (editLabel) editLabel.classList.remove('hidden');
+            if (!document.getElementById('main_schedule_section').classList.contains('active')) {
+                toggleMainSection();
+            }
+        }
+
+        async function discardScheduledAnnouncement(id) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildId = urlParams.get('guild_id');
+            if (!guildId) return;
+            try {
+                await fetch(`${API_BASE}/api/config/scheduled-announcement/${guildId}/${id}`, {
+                    method: 'DELETE'
+                });
+            } catch (e) {}
+            saEditMode = false;
+            saEditId = null;
+            const postBtn = document.getElementById('saPostBtn');
+            if (postBtn) postBtn.classList.remove('hidden');
+            const editLabel = document.getElementById('sa_editing_label');
+            if (editLabel) editLabel.classList.add('hidden');
+            await loadScheduledList();
+            resetScheduledState();
+            if (typeof window.saSwitchTab === 'function') window.saSwitchTab('text');
+        }
+
+        setInterval(updateScheduledCountdowns, 1000);
+
+        // Initialize
+        lucide.createIcons();
+        loadScheduledList();
+    </script>
+</body>
+</html>

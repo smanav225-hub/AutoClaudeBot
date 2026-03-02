@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interaction Network - AutoClaude Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
+    
+    :root {
+      --bg: #000000;
+      --panel: rgba(255, 255, 255, 0.02);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f3f4ff;
+      --muted: #7e8698;
+      --accent-gold: #c4a35a;
+      --accent-cyan: #00f2ff;
+      --accent-violet: #a855f7;
+      --glass: rgba(10, 10, 15, 0.7);
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #000 !important;
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Simple Black Scrollbar */
+    html {
+      scrollbar-width: thin !important;
+      scrollbar-color: #222 #000 !important;
+      background: #000 !important;
+    }
+
+    ::-webkit-scrollbar { 
+      width: 8px !important; 
+      height: 8px !important;
+    }
+    ::-webkit-scrollbar-track { 
+      background: #000 !important; 
+    }
+    ::-webkit-scrollbar-thumb { 
+      background: #222 !important; 
+      border-radius: 4px !important; 
+      border: 1px solid #000 !important;
+    }
+    ::-webkit-scrollbar-thumb:hover { 
+      background: #333 !important; 
+    }
+
+    .shell {
+      width: min(1360px, calc(100vw - 32px));
+      margin: 24px auto 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .glass-gold {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+    }
+
+    .title-group { display: flex; align-items: center; gap: 16px; }
+    
+    .back-btn {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: #fff;
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin: 0;
+    }
+    .main-title {
+      font-family: "Outfit", sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin: 0;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    /* Filters and Time Selectors */
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .control-group { display: flex; align-items: center; gap: 10px; }
+    .control-label { font-size: 0.7rem; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 150ms ease;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+    .chip.active { color: #fff; border-color: var(--accent-cyan); background: rgba(0, 242, 255, 0.1); }
+    
+    .chip[data-type="reply"].active { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(196, 163, 90, 0.1); }
+    .chip[data-type="thank"].active { color: var(--accent-violet); border-color: var(--accent-violet); background: rgba(168, 85, 247, 0.1); }
+
+    .time-chip {
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.05);
+        color: #555;
+        transition: all 0.2s;
+    }
+    .time-chip.active {
+        color: var(--accent-cyan);
+        border-color: rgba(0, 242, 255, 0.3);
+        background: rgba(0, 242, 255, 0.05);
+    }
+
+    /* Graph Canvas Area */
+    .graph-panel {
+      position: relative;
+      height: 640px;
+      overflow: hidden;
+      background: #000;
+      border-radius: 16px;
+    }
+    canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+    .floating-tools {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .tool-box { pointer-events: all; }
+
+    .search-input {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 0.85rem;
+      width: 240px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); }
+
+    .zoom-ctrl {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .zoom-btn {
+      width: 36px; height: 36px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--accent-cyan);
+      font-weight: 800;
+      cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .zoom-btn:hover { background: rgba(0, 242, 255, 0.1); border-color: var(--accent-cyan); }
+
+    /* Leaderboard */
+    .lb-section { padding: 24px 32px; }
+    .lb-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .lb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+    }
+    .lb-card {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+    .lb-card:hover { border-color: rgba(0, 242, 255, 0.2); background: rgba(0, 242, 255, 0.02); }
+    .rank-num { font-size: 1.25rem; font-weight: 800; color: #222; width: 28px; }
+    .users-wrap { flex: 1; font-weight: 600; font-size: 0.9rem; }
+    .users-wrap span { color: #444; margin: 0 4px; }
+    .type-tag { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+    .val-text { font-weight: 800; color: var(--accent-cyan); }
+
+    /* Tooltip */
+    .net-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: var(--glass);
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s;
+      min-width: 180px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="glass-gold header">
+      <div class="title-group">
+        <button class="back-btn" onclick="window.parent.closeComponent()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6" /></svg></button>
+        <div>
+          <p class="eyebrow">Interaction Intelligence</p>
+          <h1 class="main-title">Network Graph</h1>
+        </div>
+      </div>
+      <div id="status-tag" style="color: var(--accent-cyan); font-weight: 800; font-size: 0.7rem; letter-spacing: 0.1em; padding: 8px 16px; border: 1px solid rgba(0, 242, 255, 0.2); border-radius: 999px;">INITIALIZING...</div>
+    </header>
+
+    <div class="glass-gold controls-row">
+      <div class="control-group">
+        <span class="control-label">Time Window:</span>
+        <button class="time-chip" data-hours="24">24H</button>
+        <button class="time-chip active" data-hours="168">7D</button>
+        <button class="time-chip" data-hours="720">30D</button>
+        <button class="time-chip" data-hours="8760">ALL</button>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Show:</span>
+        <button class="chip active" data-type="reply">↩ Replies</button>
+        <button class="chip active" data-type="mention">@ Mentions</button>
+        <button class="chip active" data-type="thank">♥ Thanks</button>
+      </div>
+    </div>
+
+    <div class="graph-panel glass-gold" id="canvas-container">
+      <canvas id="graph-canvas"></canvas>
+      
+      <div class="floating-tools">
+        <div class="tool-box">
+          <input type="text" class="search-input" placeholder="Search members..." onkeyup="handleSearch(this.value)">
+        </div>
+      </div>
+
+      <div class="zoom-ctrl">
+        <button class="zoom-btn" onclick="zoomTo(1.4)">+</button>
+        <button class="zoom-btn" onclick="zoomTo(0.7)">−</button>
+        <button class="zoom-btn" onclick="resetView()">↺</button>
+      </div>
+
+      <div class="net-tooltip" id="tooltip"></div>
+    </div>
+
+    <section class="glass-gold lb-section">
+      <div class="lb-header">
+        <h2 style="margin:0; font-family:Outfit; font-size:1.25rem;">Strongest Connections</h2>
+        <span style="color:#444; font-size:0.75rem; font-weight:700;">TOP 9 INTERACTION PAIRS</span>
+      </div>
+      <div class="lb-grid" id="leaderboard"></div>
+    </section>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const guildId = params.get('guild_id');
+    
+    const TYPE_CFG = {
+      reply:   { color: '#c4a35a', label: 'Reply',   glow: 'rgba(196, 163, 90, 0.15)' },
+      mention: { color: '#00f2ff', label: 'Mention', glow: 'rgba(0, 242, 255, 0.15)' },
+      thank:   { color: '#a855f7', label: 'Thank',   glow: 'rgba(168, 85, 247, 0.15)' }
+    };
+
+    const canvas = document.getElementById('graph-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+    const tooltip = document.getElementById('tooltip');
+    
+    let nodes = [], edges = [];
+    let rotation = { x: 0, y: 0 };
+    let zoomState = { x: 0, y: 0, k: 1 };
+    let isDraggingGraph = false;
+    let lastMouse = { x: 0, y: 0 };
+    let hoveredNode = null;
+    let draggedNode = null;
+    let activeTypes = new Set(['reply', 'mention', 'thank']);
+    let activeHours = 168;
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = container.clientWidth * dpr;
+      canvas.height = container.clientHeight * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // D3 Force Engine (3D coordinates added)
+    const simulation = d3.forceSimulation()
+      .force('link', d3.forceLink().id(d => d.id).distance(100).strength(0.4))
+      .force('charge', d3.forceManyBody().strength(-200))
+      .force('center', d3.forceCenter(container.clientWidth / 2, container.clientHeight / 2))
+      .force('collide', d3.forceCollide(25))
+      .force('z', d3.forceManyBody().strength(-50)); // Simulating depth repulsion
+
+    function project(x, y, z) {
+      // 3D to 2D Projection with Rotation
+      const cx = container.clientWidth / 2;
+      const cy = container.clientHeight / 2;
+      
+      let px = x - cx;
+      let py = y - cy;
+      let pz = z || 0;
+
+      // Rotate Y
+      let tx = px * Math.cos(rotation.y) - pz * Math.sin(rotation.y);
+      let tz = px * Math.sin(rotation.y) + pz * Math.cos(rotation.y);
+      px = tx; pz = tz;
+
+      // Rotate X
+      let ty = py * Math.cos(rotation.x) - pz * Math.sin(rotation.x);
+      tz = py * Math.sin(rotation.x) + pz * Math.cos(rotation.x);
+      py = ty; pz = tz;
+
+      // Final Screen Projection
+      const scale = 800 / (800 + pz);
+      return {
+        x: px * scale * zoomState.k + cx + zoomState.x,
+        y: py * scale * zoomState.k + cy + zoomState.y,
+        scale: scale * zoomState.k,
+        pz: pz
+      };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const activeEdges = edges.filter(e => activeTypes.has(e.type));
+      const nodeMap = new Map();
+      nodes.forEach(n => nodeMap.set(n.id, project(n.x, n.y, n.z || 0)));
+
+      // Sort nodes by depth for correct layering
+      const sortedNodes = nodes
+        .filter(n => nodes.length < 30 || activeEdges.some(e => e.source.id === n.id || e.target.id === n.id))
+        .map(n => ({ ...n, proj: nodeMap.get(n.id) }))
+        .sort((a, b) => b.proj.pz - a.proj.pz);
+
+      // Draw Edges
+      activeEdges.forEach(link => {
+        const p1 = nodeMap.get(link.source.id);
+        const p2 = nodeMap.get(link.target.id);
+        if (!p1 || !p2) return;
+
+        const config = TYPE_CFG[link.type];
+        const isHighlight = hoveredNode && (link.source.id === hoveredNode.id || link.target.id === hoveredNode.id);
+
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = config.color;
+        ctx.lineWidth = (1 + (link.weight / 5)) * ((p1.scale + p2.scale) / 2);
+        ctx.globalAlpha = isHighlight ? 0.9 : (hoveredNode ? 0.05 : 0.2);
+        ctx.stroke();
+
+        if (isHighlight) {
+            ctx.globalAlpha = 0.15;
+            ctx.lineWidth += 6;
+            ctx.stroke();
+        }
+      });
+
+      // Draw Nodes
+      sortedNodes.forEach(node => {
+        const p = node.proj;
+        const isHover = hoveredNode && node.id === hoveredNode.id;
+        const isConn = hoveredNode && activeEdges.some(e => 
+          (e.source.id === node.id && e.target.id === hoveredNode.id) || 
+          (e.target.id === node.id && e.source.id === hoveredNode.id)
+        );
+
+        const r = (6 + Math.min(15, Math.sqrt(node.activity_score || 0) * 1.5)) * p.scale;
+        ctx.globalAlpha = hoveredNode ? (isHover || isConn ? 1 : 0.1) : 1;
+
+        if (isHover || isConn) {
+          const grad = ctx.createRadialGradient(p.x, p.y, r*0.3, p.x, p.y, r+15);
+          grad.addColorStop(0, isHover ? 'rgba(0, 242, 255, 0.3)' : 'rgba(255, 255, 255, 0.08)');
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.beginPath(); ctx.arc(p.x, p.y, r+15, 0, Math.PI*2); ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = isHover ? '#fff' : (isConn ? varColor(node) : '#c4a35a');
+        ctx.fill();
+        ctx.strokeStyle = isHover ? '#00f2ff' : 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = isHover ? 2 : 1;
+        ctx.stroke();
+
+        if (isHover || (p.scale > 0.8 && nodes.length < 50)) {
+           ctx.font = `${isHover ? 'bold' : 'normal'} ${11 * p.scale}px Inter`;
+           ctx.fillStyle = isHover ? '#fff' : '#666';
+           ctx.textAlign = 'center';
+           ctx.fillText(node.username, p.x, p.y - r - 8);
+        }
+      });
+      
+      // Auto-rotation when idle
+      if (!isDraggingGraph && !draggedNode && !hoveredNode) {
+          rotation.y += 0.002;
+          rotation.x += 0.001;
+      }
+    }
+
+    function varColor(n) {
+        return '#00f2ff';
+    }
+
+    simulation.on('tick', draw);
+
+    async function load() {
+      if (!guildId) return;
+      document.getElementById('status-tag').textContent = "FETCHING DATA...";
+      try {
+        const res = await fetch(`/api/pro/network/${guildId}?hours=${activeHours}&limit=120`);
+        const data = await res.json();
+        
+        nodes = data.nodes.map(n => ({ ...n, z: (Math.random() - 0.5) * 400 }));
+        edges = data.edges;
+
+        document.getElementById('status-tag').textContent = `${nodes.length} NODES LOADED`;
+        renderLeaderboard();
+
+        simulation.nodes(nodes);
+        simulation.force('link').links(edges);
+        simulation.alpha(1).restart();
+      } catch (err) { 
+          console.error(err); 
+          document.getElementById('status-tag').textContent = "LOAD FAILED";
+      }
+    }
+
+    function renderLeaderboard() {
+      const lb = document.getElementById('leaderboard');
+      lb.innerHTML = '';
+      const top = edges.filter(e => activeTypes.has(e.type))
+        .sort((a,b) => b.weight - a.weight).slice(0, 9);
+
+      top.forEach((e, i) => {
+        const cfg = TYPE_CFG[e.type];
+        const card = document.createElement('div');
+        card.className = 'lb-card';
+        card.innerHTML = `
+          <div class="rank-num">0${i+1}</div>
+          <div class="users-wrap">${e.source_name} <span>→</span> ${e.target_name}</div>
+          <div class="type-tag" style="color:${cfg.color}; background:${cfg.glow}">${cfg.icon} ${cfg.label}</div>
+          <div class="val-text">${Math.round(e.weight)}x</div>
+        `;
+        lb.appendChild(card);
+      });
+    }
+
+    // --- Interaction Logic ---
+    canvas.addEventListener('mousedown', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const found = findNodeAt(x, y);
+      if (found) {
+        draggedNode = found;
+        simulation.alphaTarget(0.3).restart();
+        found.fx = found.x;
+        found.fy = found.y;
+      } else {
+        isDraggingGraph = true;
+      }
+      lastMouse = { x, y };
+    });
+
+    window.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (draggedNode) {
+          // Invert projection to drag in world space
+          draggedNode.fx += (x - lastMouse.x) / zoomState.k;
+          draggedNode.fy += (y - lastMouse.y) / zoomState.k;
+      } else if (isDraggingGraph) {
+          rotation.y += (x - lastMouse.x) * 0.01;
+          rotation.x += (y - lastMouse.y) * 0.01;
+      } else {
+          const h = findNodeAt(x, y);
+          if (h !== hoveredNode) {
+              hoveredNode = h;
+              if (h) {
+                  tooltip.style.opacity = 1;
+                  tooltip.style.left = (x + 20) + 'px';
+                  tooltip.style.top = (y - 20) + 'px';
+                  const inc = edges.filter(e => e.target.id === h.id).length;
+                  const out = edges.filter(e => e.source.id === h.id).length;
+                  tooltip.innerHTML = `
+                    <div style="font-weight:800; color:#fff; font-size:1rem; margin-bottom:5px;">${h.username}</div>
+                    <div style="font-size:0.75rem; color:#00f2ff; margin-bottom:10px; font-weight:700;">TOTAL MESSAGES: ${h.message_count || 0}</div>
+                    <div style="font-size:0.75rem; color:#666; margin-bottom:10px;">ACTIVITY SCORE: ${h.activity_score}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; border-top:1px solid rgba(255,255,255,0.05); pt:8px;">
+                        <span>SENT: <b>${out}</b></span>
+                        <span>RECEIVED: <b>${inc}</b></span>
+                    </div>
+                  `;
+              } else { tooltip.style.opacity = 0; }
+          }
+      }
+      lastMouse = { x, y };
+      if (!simulation.alpha()) draw();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (draggedNode) {
+        draggedNode.fx = null;
+        draggedNode.fy = null;
+        draggedNode = null;
+        simulation.alphaTarget(0);
+      }
+      isDraggingGraph = false;
+    });
+
+    canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        zoomState.k *= e.deltaY > 0 ? 0.9 : 1.1;
+        zoomState.k = Math.max(0.1, Math.min(10, zoomState.k));
+        draw();
+    }, {passive: false});
+
+    function findNodeAt(mx, my) {
+        return nodes.find(n => {
+            const p = project(n.x, n.y, n.z || 0);
+            const dx = p.x - mx;
+            const dy = p.y - my;
+            return Math.sqrt(dx*dx + dy*dy) < 25 * p.scale;
+        });
+    }
+
+    // --- Actions ---
+    function zoomTo(f) { zoomState.k *= f; draw(); }
+    function resetView() { zoomState = { x: 0, y: 0, k: 1 }; rotation = { x: 0, y: 0 }; draw(); }
+    function handleSearch(q) {
+        const n = nodes.find(x => x.username.toLowerCase().includes(q.toLowerCase()));
+        if (n && q.length > 2) {
+            hoveredNode = n;
+            draw();
+        }
+    }
+
+    // Chip Handlers
+    document.querySelectorAll('.chip').forEach(c => {
+        c.onclick = () => {
+            const t = c.dataset.type;
+            if (activeTypes.has(t)) activeTypes.delete(t);
+            else activeTypes.add(t);
+            c.classList.toggle('active');
+            renderLeaderboard();
+            draw();
+        };
+    });
+
+    document.querySelectorAll('.time-chip').forEach(c => {
+        c.onclick = () => {
+            document.querySelectorAll('.time-chip').forEach(x => x.classList.remove('active'));
+            c.classList.add('active');
+            activeHours = parseInt(c.dataset.hours);
+            load();
+        };
+    });
+
+    load();
+  </script>
+</body>
+</html>
